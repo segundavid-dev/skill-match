@@ -1,0 +1,330 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  VOLUNTEER
+  ORGANIZATION
+  ADMIN
+}
+
+enum SwipeDirection {
+  LEFT
+  RIGHT
+}
+
+enum MatchStatus {
+  PENDING
+  MUTUAL
+  ACCEPTED
+  REJECTED
+}
+
+enum LocationType {
+  REMOTE
+  IN_PERSON
+  HYBRID
+}
+
+enum OpportunityStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  FILLED
+}
+
+enum ParticipationStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Core user & profiles
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String?
+  role              Role      @default(VOLUNTEER)
+  verified          Boolean   @default(false)
+  verificationToken String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  googleId          String?   @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  volunteerProfile  VolunteerProfile?
+  orgProfile        OrganizationProfile?
+  refreshTokens     RefreshToken[]
+  sentSwipes        Swipe[]           @relation("SwipeSender")
+  chatParticipants  ChatParticipant[]
+  sentMessages      Message[]         @relation("MessageSender")
+  ratingsGiven      Rating[]          @relation("RatingFrom")
+  ratingsReceived   Rating[]          @relation("RatingTo")
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model VolunteerProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String
+  avatar       String?
+  avatarPublicId String?
+  bio          String?
+  location     String?
+  availability String[] // ["weekdays","weekends","evenings","flexible"]
+  causes       String[]
+  impactScore  Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  skills        VolunteerSkill[]
+  matches       Match[]
+  swipes        Swipe[]           @relation("VolunteerSwipes")
+  participations Participation[]
+  ratingsGiven  Rating[]          @relation("VolunteerRatings")
+
+  @@map("volunteer_profiles")
+}
+
+model OrganizationProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  logo          String?
+  logoPublicId  String?
+  mission       String?
+  website       String?
+  location      String?
+  causeTags     String[]
+  verifiedBadge Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  opportunities Opportunity[]
+  ratingsGiven  Rating[]      @relation("OrgRatings")
+
+  @@map("organization_profiles")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skills
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Skill {
+  id           String           @id @default(cuid())
+  name         String           @unique
+  category     String?
+  volunteers   VolunteerSkill[]
+  opportunities OpportunitySkill[]
+
+  @@map("skills")
+}
+
+model VolunteerSkill {
+  volunteerId String
+  skillId     String
+  volunteer   VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  skill       Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([volunteerId, skillId])
+  @@map("volunteer_skills")
+}
+
+model OpportunitySkill {
+  opportunityId String
+  skillId       String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  skill         Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([opportunityId, skillId])
+  @@map("opportunity_skills")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Opportunities
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Opportunity {
+  id            String            @id @default(cuid())
+  orgId         String
+  org           OrganizationProfile @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  title         String
+  description   String
+  locationType  LocationType      @default(REMOTE)
+  location      String?
+  startDate     DateTime?
+  endDate       DateTime?
+  spotsNeeded   Int               @default(1)
+  spotsFilled   Int               @default(0)
+  status        OpportunityStatus @default(ACTIVE)
+  impactMetric  String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  // Relations
+  requiredSkills OpportunitySkill[]
+  matches        Match[]
+  swipes         Swipe[]           @relation("OpportunitySwipes")
+  participations Participation[]
+
+  @@index([orgId])
+  @@index([status])
+  @@map("opportunities")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Swiping & Matching
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Swipe {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation("SwipeSender", fields: [userId], references: [id], onDelete: Cascade)
+  volunteerId   String?
+  volunteer     VolunteerProfile? @relation("VolunteerSwipes", fields: [volunteerId], references: [id], onDelete: SetNull)
+  opportunityId String?
+  opportunity   Opportunity?   @relation("OpportunitySwipes", fields: [opportunityId], references: [id], onDelete: SetNull)
+  direction     SwipeDirection
+  timestamp     DateTime       @default(now())
+
+  @@unique([userId, opportunityId])
+  @@index([userId])
+  @@index([opportunityId])
+  @@map("swipes")
+}
+
+model Match {
+  id            String      @id @default(cuid())
+  volunteerId   String
+  volunteer     VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  opportunityId String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  status        MatchStatus @default(PENDING)
+  matchScore    Float       @default(0)
+  scoreBreakdown Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Chat room auto-created on mutual match
+  chatRoom      ChatRoom?
+
+  @@unique([volunteerId, opportunityId])
+  @@index([volunteerId])
+  @@index([opportunityId])
+  @@map("matches")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Chat
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ChatRoom {
+  id           String           @id @default(cuid())
+  matchId      String           @unique
+  match        Match            @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  participants ChatParticipant[]
+  messages     Message[]
+
+  @@map("chat_rooms")
+}
+
+model ChatParticipant {
+  chatRoomId String
+  userId     String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt   DateTime @default(now())
+
+  @@id([chatRoomId, userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([chatRoomId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Participation & Ratings
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Participation {
+  id            String              @id @default(cuid())
+  volunteerId   String
+  volunteer     VolunteerProfile    @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  opportunityId String
+  opportunity   Opportunity         @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  status        ParticipationStatus @default(PENDING)
+  confirmedDate DateTime?
+  completedDate DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([volunteerId, opportunityId])
+  @@map("participations")
+}
+
+model Rating {
+  id          String   @id @default(cuid())
+  fromUserId  String
+  fromUser    User     @relation("RatingFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId    String
+  toUser      User     @relation("RatingTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  stars       Int      // 1–5
+  feedback    String?
+  volunteerProfileId String?
+  volunteer   VolunteerProfile? @relation("VolunteerRatings", fields: [volunteerProfileId], references: [id], onDelete: SetNull)
+  orgProfileId String?
+  org         OrganizationProfile? @relation("OrgRatings", fields: [orgProfileId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("ratings")
+}
