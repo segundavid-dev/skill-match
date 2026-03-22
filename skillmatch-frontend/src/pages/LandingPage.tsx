@@ -407,7 +407,10 @@ export default function LandingPage() {
                 HERO — with Globe
             ════════════════════════════════════════════════════════════════ */}
             <section style={{
-                padding: '100px 0 80px',
+                minHeight: 'calc(100vh - 64px)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '40px 0',
                 position: 'relative',
                 overflow: 'hidden',
             }}>
@@ -423,35 +426,12 @@ export default function LandingPage() {
                     animation: 'sm-grid-fade 1.5s ease both',
                 }} />
 
-                <div className="sm-section" style={{ position: 'relative' }}>
+                <div className="sm-section" style={{ position: 'relative', width: '100%' }}>
                     <div className="sm-hero-inner">
                         {/* Left — Copy */}
                         <div className="sm-hero-content">
-                            {/* Status badge */}
-                            <div className="sm-fade-up" style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                background: 'var(--sm-accent-subtle)',
-                                border: '1px solid var(--sm-accent-border)',
-                                borderRadius: 50,
-                                padding: '6px 16px',
-                                marginBottom: 32,
-                            }}>
-                                <span style={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    background: 'var(--sm-accent)',
-                                    display: 'inline-block',
-                                    animation: 'sm-glow-pulse 2s ease infinite',
-                                }} />
-                                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--sm-text-secondary)' }}>
-                                    12,450 volunteers matched and counting
-                                </span>
-                            </div>
-
-                            <h1 className="sm-heading sm-heading-xl sm-fade-up-1" style={{ marginBottom: 24, maxWidth: 600 }}>
-                                Your skills deserve<br />
-                                <span style={{ color: 'var(--sm-accent)' }}>real impact.</span>
+                            <h1 className="sm-heading sm-heading-xl sm-fade-up-1" style={{ marginBottom: 24, maxWidth: 800 }}>
+                                Your skills deserve <span style={{ color: 'var(--sm-accent)' }}>real impact.</span>
                             </h1>
 
                             <p className="sm-subtext sm-fade-up-2" style={{ marginBottom: 48, fontSize: 18, maxWidth: 480 }}>
