@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Common resets or global defaults if needed */
+body {
+    background-color: #09090b;
+    color: #fafafa;
+    min-height: 100vh;
+}
