@@ -2,11 +2,13 @@ import React from 'react';
 
 interface LogoProps {
     size?: 'sm' | 'md' | 'lg';
+    variant?: 'light' | 'dark';
 }
 
-export default function Logo({ size = 'md' }: LogoProps) {
-    const imgSize = size === 'sm' ? 28 : size === 'lg' ? 48 : 36;
-    const fontSize = size === 'sm' ? 16 : size === 'lg' ? 26 : 20;
+export default function Logo({ size = 'md', variant = 'dark' }: LogoProps) {
+    const imgSize = size === 'sm' ? 24 : size === 'lg' ? 40 : 32;
+    const fontSize = size === 'sm' ? 15 : size === 'lg' ? 22 : 18;
+    const textColor = variant === 'dark' ? '#fafafa' : '#09090b';
 
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -16,20 +18,17 @@ export default function Logo({ size = 'md' }: LogoProps) {
                 style={{
                     width: imgSize,
                     height: imgSize,
-                    borderRadius: 8,
+                    borderRadius: size === 'sm' ? 6 : 8,
                     objectFit: 'contain',
-                    background: 'white',
                 }}
             />
             <span
                 style={{
-                    fontFamily: "'DM Serif Display', serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontWeight: 700,
                     fontSize,
-                    background: 'linear-gradient(135deg, #10B981, #14B8A6)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    letterSpacing: -0.5,
+                    color: textColor,
+                    letterSpacing: '-0.02em',
                 }}
             >
                 SkillMatch

@@ -33,7 +33,6 @@ export default function App() {
     const [showAuth, setShowAuth] = useState(false);
     const [activeTab, setActiveTab] = useState<TabId>('swipe');
     const [chatMatch, setChatMatch] = useState<MatchItem | null>(null);
-    const [darkMode, setDarkMode] = useState(false);
     const [backendStatus, setBackendStatus] = useState<string>('checking...');
 
     useEffect(() => {
@@ -95,42 +94,33 @@ export default function App() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: darkMode ? '#0F172A' : '#F8FAFC',
+            background: '#09090b',
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             paddingBottom: 80,
+            color: '#fafafa',
         }}>
             {/* Top bar */}
             <div style={{
-                background: darkMode ? '#1E293B' : 'white',
-                borderBottom: `1px solid ${darkMode ? '#334155' : '#E2E8F0'}`,
-                padding: '0 20px', height: 60,
+                background: 'rgba(9, 9, 11, 0.8)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                borderBottom: '1px solid #1f1f23',
+                padding: '0 24px', height: 64,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 position: 'sticky', top: 0, zIndex: 50,
-                boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
             }}>
                 <Logo />
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                     <span style={{ fontSize: 12, color: backendStatus === 'healthy' ? '#10B981' : '#EF4444' }}>
-                        Backend: {backendStatus}
+                        {backendStatus === 'healthy' ? 'Connected' : 'Disconnected'}
                     </span>
-                    {/* Dark mode toggle */}
-                    <button
-                        onClick={() => setDarkMode((d) => !d)}
-                        style={{
-                            background: darkMode ? '#334155' : '#F1F5F9',
-                            border: 'none', borderRadius: 10,
-                            width: 36, height: 36, cursor: 'pointer',
-                            fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}
-                    >
-                        {darkMode ? '☀️' : '🌙'}
-                    </button>
                     {/* Avatar */}
                     <div style={{
-                        width: 36, height: 36, borderRadius: '50%',
-                        background: 'linear-gradient(135deg,#10B981,#059669)',
+                        width: 32, height: 32, borderRadius: '50%',
+                        background: '#18181b',
+                        border: '1px solid #27272a',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                        color: '#10B981', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                     }}>
                         A
                     </div>
