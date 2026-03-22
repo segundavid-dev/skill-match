@@ -1,14 +1,15 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface NavItem {
-    id: string;
+    path: string;
     label: string;
     icon: React.ReactNode;
 }
 
 const NAV_ITEMS: NavItem[] = [
     {
-        id: 'swipe',
+        path: '/app/discover',
         label: 'Discover',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -18,7 +19,7 @@ const NAV_ITEMS: NavItem[] = [
         ),
     },
     {
-        id: 'matches',
+        path: '/app/matches',
         label: 'Matches',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -27,7 +28,7 @@ const NAV_ITEMS: NavItem[] = [
         ),
     },
     {
-        id: 'chat',
+        path: '/app/messages',
         label: 'Messages',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -36,7 +37,7 @@ const NAV_ITEMS: NavItem[] = [
         ),
     },
     {
-        id: 'dashboard',
+        path: '/app/dashboard',
         label: 'Dashboard',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -48,7 +49,7 @@ const NAV_ITEMS: NavItem[] = [
         ),
     },
     {
-        id: 'profile',
+        path: '/app/profile',
         label: 'Profile',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -59,12 +60,10 @@ const NAV_ITEMS: NavItem[] = [
     },
 ];
 
-interface BottomNavProps {
-    active: string;
-    onNav: (id: string) => void;
-}
+export default function BottomNav() {
+    const navigate = useNavigate();
+    const location = useLocation();
 
-export default function BottomNav({ active, onNav }: BottomNavProps) {
     return (
         <div
             style={{
@@ -82,11 +81,11 @@ export default function BottomNav({ active, onNav }: BottomNavProps) {
             }}
         >
             {NAV_ITEMS.map((item) => {
-                const isActive = active === item.id;
+                const isActive = location.pathname.startsWith(item.path);
                 return (
                     <button
-                        key={item.id}
-                        onClick={() => onNav(item.id)}
+                        key={item.path}
+                        onClick={() => navigate(item.path)}
                         style={{
                             flex: 1,
                             background: 'none',
@@ -110,14 +109,12 @@ export default function BottomNav({ active, onNav }: BottomNavProps) {
                         }}>
                             {item.icon}
                         </span>
-                        <span
-                            style={{
-                                fontSize: 11,
-                                fontWeight: isActive ? 600 : 400,
-                                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                                letterSpacing: '0.01em',
-                            }}
-                        >
+                        <span style={{
+                            fontSize: 11,
+                            fontWeight: isActive ? 600 : 400,
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            letterSpacing: '0.01em',
+                        }}>
                             {item.label}
                         </span>
                     </button>

@@ -1,83 +1,108 @@
-import React, { useState } from 'react';
-import { MATCHES } from '../data/constants.ts';
-import type { MatchItem } from '../data/constants.ts';
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Matches Page — List of mutual matches
+ * ──────────────────────────────────────────────────────────────────────────── */
 
-const TABS = ['all', 'pending', 'accepted'] as const;
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { swipeApi } from '../api';
+import type { Match } from '../types';
 
-interface MatchesPageProps {
-    onOpenChat: (match: MatchItem) => void;
-}
+export default function MatchesPage() {
+    const navigate = useNavigate();
+    const [matches, setMatches] = useState<Match[]>([]);
+    const [loading, setLoading] = useState(true);
 
-export default function MatchesPage({ onOpenChat }: MatchesPageProps) {
-    const [tab, setTab] = useState<string>('all');
+    useEffect(() => {
+        swipeApi.getMatches()
+            .then(res => { setMatches(res.data.data); setLoading(false); })
+            .catch(() => setLoading(false));
+    }, []);
 
     return (
-        <div style={{ padding: '24px 16px', fontFamily: "'Plus Jakarta Sans', sans-serif", maxWidth: 640, margin: '0 auto' }}>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 28, color: '#0F172A', marginBottom: 4 }}>
-                Your Matches
-            </h2>
-            <p style={{ color: '#64748B', marginBottom: 24 }}>{MATCHES.length} mutual connections</p>
-
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-                {TABS.map((t) => (
-                    <button
-                        key={t}
-                        onClick={() => setTab(t)}
-                        style={{
-                            padding: '8px 20px', borderRadius: 50,
-                            border: `2px solid ${tab === t ? '#10B981' : '#E2E8F0'}`,
-                            background: tab === t ? '#ECFDF5' : 'white',
-                            color: tab === t ? '#059669' : '#64748B',
-                            fontWeight: 600, fontSize: 14, cursor: 'pointer',
-                            textTransform: 'capitalize', transition: 'all 0.2s',
-                        }}
-                    >
-                        {t}
-                    </button>
-                ))}
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 24px' }}>
+            <div style={{ marginBottom: 32 }}>
+                <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>
+                    Matches
+                </h1>
+                <p style={{ fontSize: 14, color: '#71717a' }}>
+                    Organizations you've connected with
+                </p>
             </div>
 
-            {/* Match cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {MATCHES.map((m) => (
-                    <div
-                        key={m.id}
-                        onClick={() => onOpenChat(m)}
-                        style={{
-                            background: 'white', borderRadius: 16, padding: '16px 20px',
-                            boxShadow: '0 2px 12px rgba(0,0,0,0.06)', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: 16,
-                            transition: 'all 0.2s', border: '1.5px solid transparent',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.border = '1.5px solid #A7F3D0')}
-                        onMouseLeave={(e) => (e.currentTarget.style.border = '1.5px solid transparent')}
-                    >
-                        <div style={{
-                            width: 52, height: 52, borderRadius: 16, flexShrink: 0,
-                            background: `linear-gradient(135deg,${m.color},${m.color}88)`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', fontWeight: 700, fontSize: 16,
-                        }}>
-                            {m.avatar}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                                <span style={{ fontWeight: 700, color: '#0F172A', fontSize: 16 }}>{m.name}</span>
-                                <span style={{ color: '#94A3B8', fontSize: 12 }}>{m.time}</span>
-                            </div>
-                            <div style={{ color: '#059669', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{m.role}</div>
-                            <p style={{
-                                color: '#64748B', fontSize: 14,
-                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                            }}>
-                                {m.lastMsg}
-                            </p>
-                        </div>
-                        <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '80px 0', color: '#71717a' }}>Loading...</div>
+            ) : matches.length === 0 ? (
+                <div style={{
+                    textAlign: 'center', padding: '60px 32px',
+                    borderRadius: 12, border: '1px solid #27272a', background: '#18181b',
+                }}>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: '#fafafa', marginBottom: 8 }}>
+                        No matches yet
                     </div>
-                ))}
-            </div>
+                    <p style={{ fontSize: 14, color: '#71717a', marginBottom: 24 }}>
+                        Start discovering opportunities to find your first match.
+                    </p>
+                    <button onClick={() => navigate('/app/discover')} style={{
+                        padding: '10px 24px', borderRadius: 8, border: 'none',
+                        background: '#10b981', color: '#09090b',
+                        fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    }}>
+                        Browse Opportunities
+                    </button>
+                </div>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 1, borderRadius: 12, overflow: 'hidden', border: '1px solid #27272a' }}>
+                    {matches.map((match) => (
+                        <div
+                            key={match.id}
+                            onClick={() => match.chatRoom && navigate(`/app/messages/${match.chatRoom.id}`)}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 16,
+                                padding: '16px 20px', background: '#18181b',
+                                cursor: match.chatRoom ? 'pointer' : 'default',
+                                transition: 'background 0.15s',
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#1f1f23'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = '#18181b'}
+                        >
+                            {/* Avatar */}
+                            <div style={{
+                                width: 40, height: 40, borderRadius: '50%',
+                                background: '#27272a', border: '1px solid #3f3f46',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 14, fontWeight: 700, color: '#10b981', flexShrink: 0,
+                            }}>
+                                {match.opportunity?.org?.name?.[0] || 'M'}
+                            </div>
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa', marginBottom: 2 }}>
+                                    {match.opportunity?.org?.name || 'Organization'}
+                                </div>
+                                <div style={{ fontSize: 13, color: '#71717a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {match.opportunity?.title || 'Opportunity'}
+                                </div>
+                            </div>
+
+                            {/* Match score */}
+                            <span style={{
+                                padding: '4px 10px', borderRadius: 4,
+                                background: 'rgba(16, 185, 129, 0.1)',
+                                color: '#10b981', fontSize: 12, fontWeight: 600, flexShrink: 0,
+                            }}>
+                                {Math.round(match.matchScore)}% match
+                            </span>
+
+                            {/* Arrow */}
+                            {match.chatRoom && (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m9 18 6-6-6-6" />
+                                </svg>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

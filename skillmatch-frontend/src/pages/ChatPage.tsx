@@ -1,155 +1,144 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MESSAGES } from '../data/constants.ts';
-import type { MatchItem, Message } from '../data/constants.ts';
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Chat Page — Individual conversation thread
+ * ──────────────────────────────────────────────────────────────────────────── */
 
-interface ChatPageProps {
-    match: MatchItem;
-    onBack: () => void;
-}
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { chatApi } from '../api';
+import type { Message } from '../types';
 
-export default function ChatPage({ match, onBack }: ChatPageProps) {
-    const [msgs, setMsgs] = useState<Message[]>(MESSAGES[match?.id] || []);
+export default function ChatPage() {
+    const { roomId } = useParams<{ roomId: string }>();
+    const navigate = useNavigate();
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
-    const [typing, setTyping] = useState(false);
-    const bottomRef = useRef<HTMLDivElement>(null);
+    const [loading, setLoading] = useState(true);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const currentUserId = 'me'; // TODO: get from auth context
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [msgs, typing]);
+        if (!roomId) return;
+        chatApi.getMessages(roomId)
+            .then(res => { setMessages(res.data.data); setLoading(false); })
+            .catch(() => setLoading(false));
+    }, [roomId]);
 
-    const send = () => {
-        if (!input.trim()) return;
-        const text = input;
-        setInput('');
-        setMsgs((m) => [...m, { from: 'me', text, time: 'now' }]);
-        setTyping(true);
-        setTimeout(() => {
-            setTyping(false);
-            setMsgs((m) => [...m, {
-                from: 'them',
-                text: "Thanks for your message! We'll be in touch shortly.",
-                time: 'now',
-            }]);
-        }, 2000);
+    useEffect(() => {
+        scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
+    }, [messages]);
+
+    const handleSend = async () => {
+        if (!input.trim() || !roomId) return;
+        try {
+            const { data } = await chatApi.sendMessage(roomId, { content: input.trim() });
+            setMessages(prev => [...prev, data.data]);
+            setInput('');
+        } catch (err) {
+            console.error('Send failed:', err);
+        }
     };
 
     return (
         <div style={{
-            display: 'flex', flexDirection: 'column', height: '100vh',
+            position: 'fixed', inset: 0, background: '#09090b',
+            display: 'flex', flexDirection: 'column', zIndex: 200,
             fontFamily: "'Plus Jakarta Sans', sans-serif",
-            maxWidth: 640, margin: '0 auto', background: '#F8FAFC',
         }}>
             {/* Header */}
             <div style={{
-                background: 'white', padding: '16px 20px', borderBottom: '1px solid #E2E8F0',
-                display: 'flex', alignItems: 'center', gap: 16,
-                position: 'sticky', top: 0, zIndex: 10,
+                padding: '0 16px', height: 64,
+                borderBottom: '1px solid #1f1f23',
+                display: 'flex', alignItems: 'center', gap: 12,
             }}>
-                <button
-                    onClick={onBack}
-                    style={{
-                        background: '#F1F5F9', border: 'none', borderRadius: '50%',
-                        width: 36, height: 36, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
-                    }}
-                >
-                    ←
+                <button onClick={() => navigate('/app/messages')} style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#a1a1aa', display: 'flex', padding: 4,
+                }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
                 </button>
                 <div style={{
-                    width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                    background: `linear-gradient(135deg,${match?.color || '#10B981'},${match?.color || '#10B981'}88)`,
+                    width: 36, height: 36, borderRadius: '50%',
+                    background: '#18181b', border: '1px solid #27272a',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontWeight: 700, fontSize: 15,
+                    fontSize: 13, fontWeight: 700, color: '#10b981',
                 }}>
-                    {match?.avatar}
+                    C
                 </div>
-                <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, color: '#0F172A' }}>{match?.name}</div>
-                    <div style={{ color: '#10B981', fontSize: 12, fontWeight: 600 }}>● Online · {match?.role}</div>
+                <div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa' }}>Conversation</div>
+                    <div style={{ fontSize: 12, color: '#71717a' }}>Active now</div>
                 </div>
-                <button style={{
-                    background: 'linear-gradient(135deg,#10B981,#059669)', border: 'none',
-                    borderRadius: 10, padding: '8px 16px', color: 'white',
-                    fontWeight: 600, fontSize: 13, cursor: 'pointer',
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                }}>
-                    Confirm Role
-                </button>
             </div>
 
             {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {msgs.map((m, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: m.from === 'me' ? 'flex-end' : 'flex-start' }}>
-                        <div style={{
-                            maxWidth: '75%', padding: '12px 16px',
-                            borderRadius: m.from === 'me' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                            background: m.from === 'me' ? 'linear-gradient(135deg,#10B981,#059669)' : 'white',
-                            color: m.from === 'me' ? 'white' : '#0F172A',
-                            fontSize: 15, lineHeight: 1.6,
-                            boxShadow: m.from !== 'me' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
-                        }}>
-                            {m.text}
-                            <div style={{
-                                fontSize: 11,
-                                color: m.from === 'me' ? 'rgba(255,255,255,0.55)' : '#94A3B8',
-                                marginTop: 4, textAlign: 'right',
-                            }}>
-                                {m.time}
-                            </div>
-                        </div>
+            <div ref={scrollRef} style={{
+                flex: 1, overflowY: 'auto', padding: '24px 16px',
+                display: 'flex', flexDirection: 'column', gap: 12,
+            }}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', color: '#71717a', padding: '40px 0' }}>Loading...</div>
+                ) : messages.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: '#71717a', padding: '40px 0' }}>
+                        No messages yet. Say hello!
                     </div>
-                ))}
-
-                {typing && (
-                    <>
-                        <style>{`@keyframes typingDot{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}`}</style>
-                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                ) : messages.map((msg) => {
+                    const isMine = msg.senderId === currentUserId;
+                    return (
+                        <div key={msg.id} style={{
+                            alignSelf: isMine ? 'flex-end' : 'flex-start',
+                            maxWidth: '75%',
+                        }}>
                             <div style={{
-                                display: 'flex', gap: 5, padding: '14px 18px', background: 'white',
-                                borderRadius: '18px 18px 18px 4px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                padding: '10px 16px', borderRadius: 12,
+                                background: isMine ? '#10b981' : '#18181b',
+                                color: isMine ? '#09090b' : '#fafafa',
+                                fontSize: 15, lineHeight: 1.5,
+                                borderBottomRightRadius: isMine ? 4 : 12,
+                                borderBottomLeftRadius: isMine ? 12 : 4,
                             }}>
-                                {[0, 1, 2].map((i) => (
-                                    <div key={i} style={{
-                                        width: 8, height: 8, borderRadius: '50%', background: '#94A3B8',
-                                        animation: `typingDot 1.2s infinite ${i * 0.2}s`,
-                                    }} />
-                                ))}
+                                {msg.content}
+                            </div>
+                            <div style={{
+                                fontSize: 11, color: '#71717a', marginTop: 4,
+                                textAlign: isMine ? 'right' : 'left',
+                            }}>
+                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                         </div>
-                    </>
-                )}
-                <div ref={bottomRef} />
+                    );
+                })}
             </div>
 
-            {/* Input bar */}
+            {/* Input */}
             <div style={{
-                background: 'white', padding: '16px 20px', borderTop: '1px solid #E2E8F0',
+                padding: '12px 16px', borderTop: '1px solid #1f1f23',
                 display: 'flex', gap: 12, alignItems: 'center',
             }}>
                 <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && send()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                     placeholder="Type a message..."
                     style={{
-                        flex: 1, padding: '14px 18px', border: '1.5px solid #E2E8F0',
-                        borderRadius: 50, fontSize: 15, outline: 'none',
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        flex: 1, padding: '12px 16px',
+                        borderRadius: 8, border: '1px solid #27272a',
+                        background: '#18181b', color: '#fafafa',
+                        fontSize: 15, outline: 'none',
                     }}
-                    onFocus={(e) => (e.target.style.border = '1.5px solid #10B981')}
-                    onBlur={(e) => (e.target.style.border = '1.5px solid #E2E8F0')}
                 />
-                <button
-                    onClick={send}
-                    style={{
-                        width: 48, height: 48, borderRadius: '50%', border: 'none',
-                        background: 'linear-gradient(135deg,#10B981,#059669)',
-                        color: 'white', fontSize: 18, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}
-                >
-                    →
+                <button onClick={handleSend} disabled={!input.trim()} style={{
+                    width: 44, height: 44, borderRadius: 8, border: 'none',
+                    background: input.trim() ? '#10b981' : '#27272a',
+                    color: input.trim() ? '#09090b' : '#71717a',
+                    cursor: input.trim() ? 'pointer' : 'default',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s',
+                }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
                 </button>
             </div>
         </div>

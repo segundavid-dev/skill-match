@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-interface LandingPageProps {
-    onVolunteer: () => void;
-    onNonProfit: () => void;
-}
+import { useNavigate } from 'react-router-dom';
+import Globe from '../components/ui/Globe';
 
 /* ─── Data ──────────────────────────────────────────────────────────────────── */
 
@@ -125,7 +122,8 @@ function useCountUp(target: string, duration = 1800, shouldStart = false) {
 
 /* ─── Component ─────────────────────────────────────────────────────────────── */
 
-export default function LandingPage({ onVolunteer, onNonProfit }: LandingPageProps) {
+export default function LandingPage() {
+    const navigate = useNavigate();
     const [tIdx, setTIdx] = useState(0);
     const [statsVisible, setStatsVisible] = useState(false);
     const statsRef = useRef<HTMLDivElement>(null);
@@ -146,6 +144,8 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
         observer.observe(statsRef.current);
         return () => observer.disconnect();
     }, []);
+
+    const goToAuth = () => navigate('/login');
 
     return (
         <div className="sm-landing" style={{ minHeight: '100vh', background: '#09090b', color: '#fafafa' }}>
@@ -175,17 +175,9 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                     from { opacity: 0; transform: translateY(24px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
-                @keyframes sm-fade-in {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
                 @keyframes sm-glow-pulse {
                     0%, 100% { opacity: 0.4; }
                     50% { opacity: 0.7; }
-                }
-                @keyframes sm-line-grow {
-                    from { transform: scaleY(0); }
-                    to { transform: scaleY(1); }
                 }
                 @keyframes sm-grid-fade {
                     from { opacity: 0; }
@@ -325,7 +317,45 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                     margin: 0;
                 }
 
+                /* ─── Hero layout ────────────────────────────────────────── */
+                .sm-hero-inner {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 48px;
+                    position: relative;
+                }
+                .sm-hero-content {
+                    flex: 1;
+                    min-width: 0;
+                }
+                .sm-hero-globe {
+                    flex-shrink: 0;
+                    position: relative;
+                }
+                .sm-hero-globe canvas {
+                    display: block;
+                }
+
                 /* ─── Responsive ──────────────────────────────────────────── */
+                @media (max-width: 960px) {
+                    .sm-hero-inner {
+                        flex-direction: column;
+                        text-align: center;
+                    }
+                    .sm-hero-content {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    .sm-hero-globe {
+                        order: -1;
+                    }
+                    .sm-subtext {
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                }
                 @media (max-width: 768px) {
                     .sm-nav { padding: 0 16px; }
                     .sm-nav-links { display: none; }
@@ -336,21 +366,21 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                     .sm-process-grid { grid-template-columns: 1fr !important; }
                     .sm-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
                     .sm-footer-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+                    .sm-hero-globe canvas {
+                        width: 280px !important;
+                        height: 280px !important;
+                    }
+                    .sm-social-proof { justify-content: center; }
                 }
             `}</style>
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════════
                 NAVIGATION
-            ═══════════════════════════════════════════════════════════════════ */}
+            ════════════════════════════════════════════════════════════════ */}
             <nav className="sm-nav">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-                    {/* Logo */}
-                    <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-                        <img
-                            src="/logo.jpg"
-                            alt="SkillMatch"
-                            style={{ width: 32, height: 32, borderRadius: 8 }}
-                        />
+                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+                        <img src="/logo.jpg" alt="SkillMatch" style={{ width: 32, height: 32, borderRadius: 8 }} />
                         <span style={{
                             fontFamily: 'var(--sm-font)',
                             fontWeight: 700,
@@ -368,16 +398,16 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                     </div>
                 </div>
                 <div className="sm-nav-actions">
-                    <button className="sm-btn sm-btn-ghost" onClick={onVolunteer}>Sign In</button>
-                    <button className="sm-btn sm-btn-primary" onClick={onVolunteer}>Get Started</button>
+                    <button className="sm-btn sm-btn-ghost" onClick={goToAuth}>Sign In</button>
+                    <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')}>Get Started</button>
                 </div>
             </nav>
 
-            {/* ══════════════════════════════════════════════════════════════════
-                HERO
-            ═══════════════════════════════════════════════════════════════════ */}
+            {/* ═══════════════════════════════════════════════════════════════
+                HERO — with Globe
+            ════════════════════════════════════════════════════════════════ */}
             <section style={{
-                padding: '120px 0 100px',
+                padding: '100px 0 80px',
                 position: 'relative',
                 overflow: 'hidden',
             }}>
@@ -393,112 +423,87 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                     animation: 'sm-grid-fade 1.5s ease both',
                 }} />
 
-                {/* Glow */}
-                <div style={{
-                    position: 'absolute',
-                    top: '-20%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 800,
-                    height: 600,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(ellipse, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
-                    pointerEvents: 'none',
-                }} />
-
                 <div className="sm-section" style={{ position: 'relative' }}>
-                    {/* Status badge */}
-                    <div className="sm-fade-up" style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        background: 'var(--sm-accent-subtle)',
-                        border: '1px solid var(--sm-accent-border)',
-                        borderRadius: 50,
-                        padding: '6px 16px',
-                        marginBottom: 32,
-                    }}>
-                        <span style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: '50%',
-                            background: 'var(--sm-accent)',
-                            display: 'inline-block',
-                            animation: 'sm-glow-pulse 2s ease infinite',
-                        }} />
-                        <span style={{
-                            fontSize: 13,
-                            fontWeight: 500,
-                            color: 'var(--sm-text-secondary)',
-                        }}>
-                            12,450 volunteers matched and counting
-                        </span>
-                    </div>
+                    <div className="sm-hero-inner">
+                        {/* Left — Copy */}
+                        <div className="sm-hero-content">
+                            {/* Status badge */}
+                            <div className="sm-fade-up" style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                background: 'var(--sm-accent-subtle)',
+                                border: '1px solid var(--sm-accent-border)',
+                                borderRadius: 50,
+                                padding: '6px 16px',
+                                marginBottom: 32,
+                            }}>
+                                <span style={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    background: 'var(--sm-accent)',
+                                    display: 'inline-block',
+                                    animation: 'sm-glow-pulse 2s ease infinite',
+                                }} />
+                                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--sm-text-secondary)' }}>
+                                    12,450 volunteers matched and counting
+                                </span>
+                            </div>
 
-                    {/* Headline */}
-                    <h1 className="sm-heading sm-heading-xl sm-fade-up-1" style={{
-                        marginBottom: 24,
-                        maxWidth: 720,
-                    }}>
-                        Your skills deserve<br />
-                        <span style={{ color: 'var(--sm-accent)' }}>real impact.</span>
-                    </h1>
+                            <h1 className="sm-heading sm-heading-xl sm-fade-up-1" style={{ marginBottom: 24, maxWidth: 600 }}>
+                                Your skills deserve<br />
+                                <span style={{ color: 'var(--sm-accent)' }}>real impact.</span>
+                            </h1>
 
-                    {/* Subtext */}
-                    <p className="sm-subtext sm-fade-up-2" style={{
-                        marginBottom: 48,
-                        fontSize: 18,
-                        maxWidth: 560,
-                    }}>
-                        SkillMatch connects volunteers with organizations that need their exact expertise. 
-                        No noise — just meaningful, verified opportunities.
-                    </p>
+                            <p className="sm-subtext sm-fade-up-2" style={{ marginBottom: 48, fontSize: 18, maxWidth: 480 }}>
+                                SkillMatch connects volunteers with organizations that need their exact expertise.
+                                No noise — just meaningful, verified opportunities.
+                            </p>
 
-                    {/* Action buttons */}
-                    <div className="sm-hero-buttons sm-fade-up-3" style={{ display: 'flex', gap: 12, marginBottom: 80 }}>
-                        <button className="sm-btn sm-btn-primary" onClick={onVolunteer} style={{ padding: '14px 32px', fontSize: 15 }}>
-                            Start Volunteering
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                            </svg>
-                        </button>
-                        <button className="sm-btn sm-btn-secondary" onClick={onNonProfit} style={{ padding: '14px 32px', fontSize: 15 }}>
-                            Post Opportunities
-                        </button>
-                    </div>
+                            <div className="sm-hero-buttons sm-fade-up-3" style={{ display: 'flex', gap: 12, marginBottom: 48 }}>
+                                <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')} style={{ padding: '14px 32px', fontSize: 15 }}>
+                                    Start Volunteering
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                                    </svg>
+                                </button>
+                                <button className="sm-btn sm-btn-secondary" onClick={goToAuth} style={{ padding: '14px 32px', fontSize: 15 }}>
+                                    Post Opportunities
+                                </button>
+                            </div>
 
-                    {/* Trusted by logos / social proof */}
-                    <div className="sm-fade-up-4" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <div style={{ display: 'flex' }}>
-                            {['AO', 'FA', 'CN', 'KJ', 'RM'].map((initials, i) => (
-                                <div key={i} style={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: '50%',
-                                    background: `hsl(${160 + i * 20}, 60%, ${30 + i * 5}%)`,
-                                    border: '2px solid var(--sm-bg)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: 11,
-                                    fontWeight: 700,
-                                    color: '#fff',
-                                    marginLeft: i > 0 ? -8 : 0,
-                                }}>
-                                    {initials}
+                            {/* Social proof */}
+                            <div className="sm-fade-up-4 sm-social-proof" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div style={{ display: 'flex' }}>
+                                    {['AO', 'FA', 'CN', 'KJ', 'RM'].map((initials, i) => (
+                                        <div key={i} style={{
+                                            width: 32, height: 32, borderRadius: '50%',
+                                            background: `hsl(${160 + i * 20}, 60%, ${30 + i * 5}%)`,
+                                            border: '2px solid var(--sm-bg)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 11, fontWeight: 700, color: '#fff',
+                                            marginLeft: i > 0 ? -8 : 0,
+                                        }}>
+                                            {initials}
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                                <span style={{ fontSize: 14, color: 'var(--sm-text-muted)' }}>
+                                    Trusted by <strong style={{ color: 'var(--sm-text-secondary)' }}>890+</strong> organizations worldwide
+                                </span>
+                            </div>
                         </div>
-                        <span style={{ fontSize: 14, color: 'var(--sm-text-muted)' }}>
-                            Trusted by <strong style={{ color: 'var(--sm-text-secondary)' }}>890+</strong> organizations worldwide
-                        </span>
+
+                        {/* Right — Globe */}
+                        <div className="sm-hero-globe sm-fade-up-2">
+                            <Globe size={420} color="#10b981" />
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════════
                 STATS BAR
-            ═══════════════════════════════════════════════════════════════════ */}
+            ════════════════════════════════════════════════════════════════ */}
             <section ref={statsRef} style={{ borderTop: '1px solid var(--sm-border)', borderBottom: '1px solid var(--sm-border)' }}>
                 <div className="sm-section">
                     <div className="sm-stats-grid" style={{
@@ -513,9 +518,9 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                 </div>
             </section>
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════════
                 FEATURES
-            ═══════════════════════════════════════════════════════════════════ */}
+            ════════════════════════════════════════════════════════════════ */}
             <section style={{ padding: '120px 0' }}>
                 <div className="sm-section">
                     <div className="sm-section-header">
@@ -546,13 +551,10 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                             onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--sm-bg)'; }}
                             >
                                 <div style={{
-                                    width: 44,
-                                    height: 44,
+                                    width: 44, height: 44,
                                     borderRadius: 'var(--sm-radius)',
                                     border: '1px solid var(--sm-border)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     color: 'var(--sm-accent)',
                                     marginBottom: 20,
                                 }}>
@@ -560,19 +562,15 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                                 </div>
                                 <h3 style={{
                                     fontFamily: 'var(--sm-font)',
-                                    fontWeight: 600,
-                                    fontSize: 18,
+                                    fontWeight: 600, fontSize: 18,
                                     color: 'var(--sm-text)',
-                                    marginBottom: 8,
-                                    letterSpacing: '-0.01em',
+                                    marginBottom: 8, letterSpacing: '-0.01em',
                                 }}>
                                     {feature.title}
                                 </h3>
                                 <p style={{
-                                    fontSize: 15,
-                                    lineHeight: 1.7,
-                                    color: 'var(--sm-text-muted)',
-                                    margin: 0,
+                                    fontSize: 15, lineHeight: 1.7,
+                                    color: 'var(--sm-text-muted)', margin: 0,
                                 }}>
                                     {feature.desc}
                                 </p>
@@ -584,9 +582,9 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
 
             <hr className="sm-divider" style={{ maxWidth: 1120, margin: '0 auto' }} />
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════════
                 HOW IT WORKS
-            ═══════════════════════════════════════════════════════════════════ */}
+            ════════════════════════════════════════════════════════════════ */}
             <section style={{ padding: '120px 0' }}>
                 <div className="sm-section">
                     <div className="sm-section-header">
@@ -605,53 +603,37 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                         gap: 32,
                     }}>
                         {PROCESS_STEPS.map((step) => (
-                            <div key={step.step} style={{
-                                position: 'relative',
-                                padding: '32px 0',
-                            }}>
+                            <div key={step.step} style={{ position: 'relative', padding: '32px 0' }}>
                                 <span style={{
-                                    display: 'block',
-                                    fontSize: 12,
-                                    fontWeight: 700,
+                                    display: 'block', fontSize: 12, fontWeight: 700,
                                     fontFamily: 'var(--sm-font)',
                                     color: 'var(--sm-accent)',
-                                    marginBottom: 16,
-                                    letterSpacing: '0.1em',
+                                    marginBottom: 16, letterSpacing: '0.1em',
                                 }}>
                                     STEP {step.step}
                                 </span>
                                 <div style={{
-                                    width: '100%',
-                                    height: 1,
+                                    width: '100%', height: 1,
                                     background: 'var(--sm-border)',
-                                    marginBottom: 24,
-                                    position: 'relative',
+                                    marginBottom: 24, position: 'relative',
                                 }}>
                                     <div style={{
-                                        position: 'absolute',
-                                        left: 0,
-                                        top: -3,
-                                        width: 7,
-                                        height: 7,
-                                        borderRadius: '50%',
+                                        position: 'absolute', left: 0, top: -3,
+                                        width: 7, height: 7, borderRadius: '50%',
                                         background: 'var(--sm-accent)',
                                     }} />
                                 </div>
                                 <h3 style={{
                                     fontFamily: 'var(--sm-font)',
-                                    fontWeight: 600,
-                                    fontSize: 20,
+                                    fontWeight: 600, fontSize: 20,
                                     color: 'var(--sm-text)',
-                                    marginBottom: 12,
-                                    letterSpacing: '-0.01em',
+                                    marginBottom: 12, letterSpacing: '-0.01em',
                                 }}>
                                     {step.title}
                                 </h3>
                                 <p style={{
-                                    fontSize: 15,
-                                    lineHeight: 1.7,
-                                    color: 'var(--sm-text-muted)',
-                                    margin: 0,
+                                    fontSize: 15, lineHeight: 1.7,
+                                    color: 'var(--sm-text-muted)', margin: 0,
                                 }}>
                                     {step.desc}
                                 </p>
@@ -663,9 +645,9 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
 
             <hr className="sm-divider" style={{ maxWidth: 1120, margin: '0 auto' }} />
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════════
                 TESTIMONIALS
-            ═══════════════════════════════════════════════════════════════════ */}
+            ════════════════════════════════════════════════════════════════ */}
             <section style={{ padding: '120px 0' }}>
                 <div className="sm-section">
                     <div className="sm-section-header">
@@ -678,71 +660,43 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                         </p>
                     </div>
 
-                    <div style={{
-                        position: 'relative',
-                        minHeight: 220,
-                        maxWidth: 640,
-                    }}>
+                    <div style={{ position: 'relative', minHeight: 220, maxWidth: 640 }}>
                         {TESTIMONIALS.map((t, i) => (
                             <div key={i} style={{
                                 position: i === 0 ? 'relative' : 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
+                                top: 0, left: 0, right: 0,
                                 opacity: i === tIdx ? 1 : 0,
                                 transform: `translateY(${i === tIdx ? 0 : 12}px)`,
                                 transition: 'all 0.5s ease',
                                 pointerEvents: i === tIdx ? 'auto' : 'none',
                             }}>
-                                {/* Quote mark */}
                                 <div style={{
-                                    fontSize: 48,
-                                    lineHeight: 1,
-                                    color: 'var(--sm-accent)',
-                                    opacity: 0.3,
-                                    marginBottom: 16,
-                                    fontFamily: 'Georgia, serif',
+                                    fontSize: 48, lineHeight: 1,
+                                    color: 'var(--sm-accent)', opacity: 0.3,
+                                    marginBottom: 16, fontFamily: 'Georgia, serif',
                                 }}>"</div>
-
                                 <p style={{
-                                    fontSize: 20,
-                                    lineHeight: 1.7,
-                                    color: 'var(--sm-text)',
-                                    fontWeight: 400,
-                                    marginBottom: 32,
-                                    letterSpacing: '-0.01em',
+                                    fontSize: 20, lineHeight: 1.7,
+                                    color: 'var(--sm-text)', fontWeight: 400,
+                                    marginBottom: 32, letterSpacing: '-0.01em',
                                 }}>
                                     {t.text}
                                 </p>
-
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <div style={{
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: '50%',
+                                        width: 40, height: 40, borderRadius: '50%',
                                         background: 'var(--sm-surface)',
                                         border: '1px solid var(--sm-border)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: 14,
-                                        fontWeight: 700,
-                                        color: 'var(--sm-accent)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: 14, fontWeight: 700, color: 'var(--sm-accent)',
                                     }}>
                                         {t.name.split(' ').map(w => w[0]).join('')}
                                     </div>
                                     <div>
-                                        <div style={{
-                                            fontWeight: 600,
-                                            fontSize: 15,
-                                            color: 'var(--sm-text)',
-                                        }}>
+                                        <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--sm-text)' }}>
                                             {t.name}
                                         </div>
-                                        <div style={{
-                                            fontSize: 13,
-                                            color: 'var(--sm-text-muted)',
-                                        }}>
+                                        <div style={{ fontSize: 13, color: 'var(--sm-text-muted)' }}>
                                             {t.role} at {t.org}
                                         </div>
                                     </div>
@@ -751,24 +705,14 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                         ))}
                     </div>
 
-                    {/* Dots */}
                     <div style={{ display: 'flex', gap: 6, marginTop: 48 }}>
                         {TESTIMONIALS.map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setTIdx(i)}
-                                style={{
-                                    width: i === tIdx ? 24 : 8,
-                                    height: 8,
-                                    borderRadius: 4,
-                                    border: 'none',
-                                    background: i === tIdx ? 'var(--sm-accent)' : 'var(--sm-border)',
-                                    transition: 'all 0.3s ease',
-                                    cursor: 'pointer',
-                                    padding: 0,
-                                }}
-                                aria-label={`View testimonial ${i + 1}`}
-                            />
+                            <button key={i} onClick={() => setTIdx(i)} aria-label={`View testimonial ${i + 1}`} style={{
+                                width: i === tIdx ? 24 : 8, height: 8,
+                                borderRadius: 4, border: 'none',
+                                background: i === tIdx ? 'var(--sm-accent)' : 'var(--sm-border)',
+                                transition: 'all 0.3s ease', cursor: 'pointer', padding: 0,
+                            }} />
                         ))}
                     </div>
                 </div>
@@ -776,125 +720,80 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
 
             <hr className="sm-divider" style={{ maxWidth: 1120, margin: '0 auto' }} />
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════════
                 CTA
-            ═══════════════════════════════════════════════════════════════════ */}
+            ════════════════════════════════════════════════════════════════ */}
             <section style={{ padding: '120px 0', position: 'relative', overflow: 'hidden' }}>
-                {/* CTA Glow */}
                 <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
+                    position: 'absolute', top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: 600,
-                    height: 400,
-                    borderRadius: '50%',
+                    width: 600, height: 400, borderRadius: '50%',
                     background: 'radial-gradient(ellipse, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
                     pointerEvents: 'none',
                 }} />
-
                 <div className="sm-section" style={{ position: 'relative', textAlign: 'center' }}>
                     <h2 className="sm-heading sm-heading-lg" style={{
-                        marginBottom: 16,
-                        maxWidth: 600,
-                        marginLeft: 'auto',
-                        marginRight: 'auto',
+                        marginBottom: 16, maxWidth: 600,
+                        marginLeft: 'auto', marginRight: 'auto',
                     }}>
                         Ready to put your skills to work?
                     </h2>
                     <p className="sm-subtext" style={{
                         marginBottom: 48,
-                        marginLeft: 'auto',
-                        marginRight: 'auto',
-                        textAlign: 'center',
+                        marginLeft: 'auto', marginRight: 'auto', textAlign: 'center',
                     }}>
                         Join thousands of volunteers and organizations already making measurable impact through SkillMatch.
                     </p>
                     <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <button className="sm-btn sm-btn-primary" onClick={onVolunteer} style={{ padding: '16px 40px', fontSize: 16 }}>
+                        <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')} style={{ padding: '16px 40px', fontSize: 16 }}>
                             Start Matching — Free
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                             </svg>
                         </button>
-                        <button className="sm-btn sm-btn-secondary" onClick={onNonProfit} style={{ padding: '16px 40px', fontSize: 16 }}>
+                        <button className="sm-btn sm-btn-secondary" onClick={goToAuth} style={{ padding: '16px 40px', fontSize: 16 }}>
                             List Your Organization
                         </button>
                     </div>
                 </div>
             </section>
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════════
                 FOOTER
-            ═══════════════════════════════════════════════════════════════════ */}
+            ════════════════════════════════════════════════════════════════ */}
             <footer style={{ borderTop: '1px solid var(--sm-border)' }}>
                 <div className="sm-section" style={{ padding: '64px 32px 32px' }}>
                     <div className="sm-footer-grid" style={{
                         display: 'grid',
                         gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                        gap: 64,
-                        marginBottom: 48,
+                        gap: 64, marginBottom: 48,
                     }}>
-                        {/* Brand */}
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                                 <img src="/logo.jpg" alt="SkillMatch" style={{ width: 28, height: 28, borderRadius: 6 }} />
-                                <span style={{
-                                    fontWeight: 700,
-                                    fontSize: 16,
-                                    color: 'var(--sm-text)',
-                                    letterSpacing: '-0.02em',
-                                }}>
+                                <span style={{ fontWeight: 700, fontSize: 16, color: 'var(--sm-text)', letterSpacing: '-0.02em' }}>
                                     SkillMatch
                                 </span>
                             </div>
-                            <p style={{
-                                fontSize: 14,
-                                lineHeight: 1.6,
-                                color: 'var(--sm-text-muted)',
-                                maxWidth: 280,
-                            }}>
+                            <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--sm-text-muted)', maxWidth: 280 }}>
                                 Connecting skills to causes that matter. Built for impact, designed for people.
                             </p>
                         </div>
-
-                        {/* Links */}
                         {[
-                            {
-                                heading: 'Product',
-                                links: ['Features', 'How It Works', 'Pricing', 'API'],
-                            },
-                            {
-                                heading: 'Company',
-                                links: ['About', 'Blog', 'Careers', 'Contact'],
-                            },
-                            {
-                                heading: 'Legal',
-                                links: ['Privacy', 'Terms', 'Security'],
-                            },
+                            { heading: 'Product', links: ['Features', 'How It Works', 'Pricing', 'API'] },
+                            { heading: 'Company', links: ['About', 'Blog', 'Careers', 'Contact'] },
+                            { heading: 'Legal', links: ['Privacy', 'Terms', 'Security'] },
                         ].map((col) => (
                             <div key={col.heading}>
-                                <p style={{
-                                    fontSize: 13,
-                                    fontWeight: 600,
-                                    color: 'var(--sm-text)',
-                                    marginBottom: 16,
-                                    letterSpacing: '0.02em',
-                                }}>
+                                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--sm-text)', marginBottom: 16, letterSpacing: '0.02em' }}>
                                     {col.heading}
                                 </p>
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                     {col.links.map((link) => (
                                         <li key={link} style={{ marginBottom: 10 }}>
-                                            <a href="#" style={{
-                                                fontSize: 14,
-                                                color: 'var(--sm-text-muted)',
-                                                textDecoration: 'none',
-                                                transition: 'color 0.15s',
-                                            }}
+                                            <a href="#" style={{ fontSize: 14, color: 'var(--sm-text-muted)', textDecoration: 'none', transition: 'color 0.15s' }}
                                             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--sm-text)'; }}
-                                            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}
-                                            >
+                                            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}>
                                                 {link}
                                             </a>
                                         </li>
@@ -903,31 +802,20 @@ export default function LandingPage({ onVolunteer, onNonProfit }: LandingPagePro
                             </div>
                         ))}
                     </div>
-
-                    {/* Bottom bar */}
                     <div style={{
                         borderTop: '1px solid var(--sm-border)',
                         paddingTop: 24,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: 16,
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        flexWrap: 'wrap', gap: 16,
                     }}>
                         <span style={{ fontSize: 13, color: 'var(--sm-text-muted)' }}>
                             &copy; {new Date().getFullYear()} SkillMatch. All rights reserved.
                         </span>
                         <div style={{ display: 'flex', gap: 20 }}>
                             {['Twitter', 'GitHub', 'LinkedIn'].map((social) => (
-                                <a key={social} href="#" style={{
-                                    fontSize: 13,
-                                    color: 'var(--sm-text-muted)',
-                                    textDecoration: 'none',
-                                    transition: 'color 0.15s',
-                                }}
+                                <a key={social} href="#" style={{ fontSize: 13, color: 'var(--sm-text-muted)', textDecoration: 'none', transition: 'color 0.15s' }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--sm-text)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}
-                                >
+                                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}>
                                     {social}
                                 </a>
                             ))}
@@ -951,24 +839,18 @@ function StatCell({ stat, index, visible, total }: {
 
     return (
         <div style={{
-            padding: '40px 32px',
-            textAlign: 'center',
+            padding: '40px 32px', textAlign: 'center',
             borderRight: index < total - 1 ? '1px solid var(--sm-border)' : 'none',
         }}>
             <div style={{
                 fontFamily: 'var(--sm-font)',
-                fontWeight: 700,
-                fontSize: 32,
+                fontWeight: 700, fontSize: 32,
                 color: 'var(--sm-text)',
-                letterSpacing: '-0.03em',
-                marginBottom: 4,
+                letterSpacing: '-0.03em', marginBottom: 4,
             }}>
                 {count}
             </div>
-            <div style={{
-                fontSize: 14,
-                color: 'var(--sm-text-muted)',
-            }}>
+            <div style={{ fontSize: 14, color: 'var(--sm-text-muted)' }}>
                 {stat.label}
             </div>
         </div>

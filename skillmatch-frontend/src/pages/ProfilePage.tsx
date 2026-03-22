@@ -1,122 +1,135 @@
-import React, { useState } from 'react';
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Profile Page — User profile view & edit
+ * ──────────────────────────────────────────────────────────────────────────── */
 
-const MY_SKILLS = ['Coding', 'Teaching', 'Graphic Design', 'Data Analysis'];
-
-const TESTIMONIALS = [
-    { from: 'Green Earth Foundation', text: 'Alex delivered outstanding work on our dashboard. Highly recommended!', rating: 5 },
-    { from: 'Bright Minds Academy', text: 'A natural mentor. Our students loved every session.', rating: 5 },
-];
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authApi, volunteerApi } from '../api';
+import type { User, VolunteerProfile } from '../types';
 
 export default function ProfilePage() {
-    const [rating, setRating] = useState(0);
-    const [hover, setHover] = useState(0);
-    const [submitted, setSubmitted] = useState(false);
+    const navigate = useNavigate();
+    const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<VolunteerProfile | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        authApi.me()
+            .then(res => {
+                setUser(res.data.user);
+                if (res.data.user.role === 'VOLUNTEER') {
+                    return volunteerApi.getMyProfile()
+                        .then(p => setProfile(p.data.data))
+                        .catch(() => {});
+                }
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleLogout = () => {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) authApi.logout(refreshToken).catch(() => {});
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        navigate('/');
+    };
+
+    if (loading) {
+        return <div style={{ textAlign: 'center', padding: '80px 0', color: '#71717a' }}>Loading...</div>;
+    }
 
     return (
-        <div style={{ padding: '24px 16px', fontFamily: "'Plus Jakarta Sans', sans-serif", maxWidth: 600, margin: '0 auto' }}>
-            {/* Profile header */}
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 24px' }}>
+            <div style={{ marginBottom: 32 }}>
+                <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>
+                    Profile
+                </h1>
+                <p style={{ fontSize: 14, color: '#71717a' }}>
+                    Manage your account and preferences
+                </p>
+            </div>
+
+            {/* Profile card */}
             <div style={{
-                background: 'linear-gradient(135deg,#10B981,#14B8A6)',
-                borderRadius: 24, padding: 32, marginBottom: 24, textAlign: 'center', position: 'relative',
+                borderRadius: 12, border: '1px solid #27272a', overflow: 'hidden', marginBottom: 24,
             }}>
                 <div style={{
-                    width: 80, height: 80, borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.2)', border: '3px solid white',
-                    margin: '0 auto 16px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
+                    padding: '24px 20px',
+                    background: '#18181b',
+                    display: 'flex', alignItems: 'center', gap: 16,
                 }}>
-                    👤
-                </div>
-                <h2 style={{ color: 'white', fontFamily: "'DM Serif Display', serif", fontSize: 26, marginBottom: 4 }}>
-                    Alex Johnson
-                </h2>
-                <p style={{ color: 'rgba(255,255,255,0.8)' }}>Volunteer · Lagos, Nigeria</p>
-                <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    background: 'rgba(255,255,255,0.2)', borderRadius: 50,
-                    padding: '6px 16px', marginTop: 12,
-                }}>
-                    <span style={{ color: '#FDE68A', fontSize: 16 }}>★</span>
-                    <span style={{ color: 'white', fontWeight: 700 }}>4.9</span>
-                    <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>· 23 reviews</span>
-                </div>
-            </div>
-
-            {/* Skills */}
-            <div style={{ background: 'white', borderRadius: 20, padding: 24, marginBottom: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>My Skills</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {MY_SKILLS.map((s) => (
-                        <span key={s} style={{
-                            background: '#ECFDF5', color: '#059669',
-                            padding: '8px 16px', borderRadius: 50, fontSize: 14,
-                            fontWeight: 600, border: '1px solid #A7F3D0',
-                        }}>
-                            {s}
-                        </span>
-                    ))}
-                </div>
-            </div>
-
-            {/* Rating */}
-            <div style={{ background: 'white', borderRadius: 20, padding: 24, marginBottom: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: 8 }}>Rate a Recent Experience</h3>
-                <p style={{ color: '#64748B', fontSize: 14, marginBottom: 16 }}>How was your time with Green Earth Foundation?</p>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', fontSize: 40, marginBottom: 16 }}>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                        <span
-                            key={i}
-                            onMouseEnter={() => setHover(i)}
-                            onMouseLeave={() => setHover(0)}
-                            onClick={() => setRating(i)}
-                            style={{
-                                cursor: 'pointer',
-                                color: i <= (hover || rating) ? '#F59E0B' : '#E2E8F0',
-                                transition: 'color 0.1s, transform 0.1s',
-                                transform: i <= (hover || rating) ? 'scale(1.2)' : 'scale(1)',
-                                display: 'inline-block',
-                            }}
-                        >
-                            ★
-                        </span>
-                    ))}
-                </div>
-                {rating > 0 && !submitted && (
-                    <button
-                        onClick={() => setSubmitted(true)}
-                        style={{
-                            width: '100%', padding: 14, borderRadius: 12, border: 'none',
-                            background: 'linear-gradient(135deg,#10B981,#059669)',
-                            color: 'white', fontWeight: 700, cursor: 'pointer',
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
-                    >
-                        Submit Review ✓
-                    </button>
-                )}
-                {submitted && (
                     <div style={{
-                        textAlign: 'center', padding: 16,
-                        background: '#ECFDF5', borderRadius: 12,
-                        color: '#059669', fontWeight: 600,
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: '#27272a', border: '1px solid #3f3f46',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 22, fontWeight: 700, color: '#10b981',
                     }}>
-                        ✅ Review submitted! Thank you.
+                        {profile?.fullName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                     </div>
-                )}
+                    <div>
+                        <div style={{ fontSize: 18, fontWeight: 600, color: '#fafafa' }}>
+                            {profile?.fullName || user?.email || 'User'}
+                        </div>
+                        <div style={{ fontSize: 13, color: '#71717a' }}>
+                            {user?.email}
+                        </div>
+                        <div style={{
+                            display: 'inline-block', marginTop: 4,
+                            padding: '2px 8px', borderRadius: 4,
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            color: '#10b981', fontSize: 12, fontWeight: 600,
+                        }}>
+                            {user?.role}
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Testimonials */}
-            <div style={{ background: 'white', borderRadius: 20, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: 16 }}>Testimonials</h3>
-                {TESTIMONIALS.map((r, i) => (
-                    <div key={i} style={{ padding: '16px 0', borderBottom: i < TESTIMONIALS.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                            <span style={{ fontWeight: 600, color: '#0F172A', fontSize: 14 }}>{r.from}</span>
-                            <span style={{ color: '#F59E0B' }}>{'★'.repeat(r.rating)}</span>
+            {/* Profile details */}
+            {profile && (
+                <div style={{
+                    borderRadius: 12, border: '1px solid #27272a', overflow: 'hidden', marginBottom: 24,
+                }}>
+                    {[
+                        { label: 'Bio', value: profile.bio || 'Not set' },
+                        { label: 'Location', value: profile.location || 'Not set' },
+                        { label: 'Availability', value: profile.availability?.join(', ') || 'Not set' },
+                        { label: 'Causes', value: profile.causes?.join(', ') || 'Not set' },
+                        { label: 'Impact Score', value: String(profile.impactScore) },
+                    ].map((item, i) => (
+                        <div key={item.label} style={{
+                            padding: '16px 20px', background: '#18181b',
+                            borderBottom: i < 4 ? '1px solid #27272a' : 'none',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        }}>
+                            <span style={{ fontSize: 14, color: '#a1a1aa' }}>{item.label}</span>
+                            <span style={{ fontSize: 14, color: '#fafafa', textAlign: 'right', maxWidth: '60%' }}>
+                                {item.value}
+                            </span>
                         </div>
-                        <p style={{ color: '#64748B', fontSize: 14, lineHeight: 1.6 }}>"{r.text}"</p>
-                    </div>
-                ))}
+                    ))}
+                </div>
+            )}
+
+            {/* Actions */}
+            <div style={{
+                borderRadius: 12, border: '1px solid #27272a', overflow: 'hidden',
+            }}>
+                <button
+                    onClick={handleLogout}
+                    style={{
+                        width: '100%', padding: '16px 20px',
+                        background: '#18181b', border: 'none',
+                        color: '#ef4444', fontSize: 14, fontWeight: 600,
+                        cursor: 'pointer', textAlign: 'left',
+                        transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#1f1f23'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#18181b'}
+                >
+                    Sign Out
+                </button>
             </div>
         </div>
     );
