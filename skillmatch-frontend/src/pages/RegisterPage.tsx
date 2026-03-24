@@ -20,9 +20,10 @@ export default function RegisterPage() {
         setError('');
         setLoading(true);
         try {
-            const { data } = await authApi.register({ email, password, role });
-            localStorage.setItem('accessToken', data.tokens.accessToken);
-            localStorage.setItem('refreshToken', data.tokens.refreshToken);
+            const res = await authApi.register({ email, password, role });
+            const { tokens } = res.data.data;
+            localStorage.setItem('accessToken', tokens.accessToken);
+            localStorage.setItem('refreshToken', tokens.refreshToken);
             navigate(role === 'VOLUNTEER' ? '/onboarding' : '/app/dashboard');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Registration failed. Please try again.');

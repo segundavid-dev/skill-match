@@ -33,8 +33,11 @@ export interface RegisterPayload {
 
 export interface AuthResponse {
     success: boolean;
-    user: User;
-    tokens: AuthTokens;
+    message: string;
+    data: {
+        user: User;
+        tokens: AuthTokens;
+    };
 }
 
 // ── User ───────────────────────────────────────────────────────────────────

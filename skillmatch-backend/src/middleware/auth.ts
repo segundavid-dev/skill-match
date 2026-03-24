@@ -19,7 +19,6 @@ export const authenticate = async (
     const token = authHeader.split(' ')[1];
     const payload = verifyAccessToken(token);
 
-    // Confirm user still exists
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: { id: true, email: true, role: true, verified: true },
@@ -27,11 +26,6 @@ export const authenticate = async (
 
     if (!user) {
       sendUnauthorized(res, 'User no longer exists');
-      return;
-    }
-
-    if (!user.verified) {
-      sendForbidden(res, 'Please verify your email address before continuing');
       return;
     }
 
@@ -54,5 +48,3 @@ export const requireRole = (...roles: Role[]) =>
 export const volunteerOnly = requireRole(Role.VOLUNTEER);
 export const orgOnly = requireRole(Role.ORGANIZATION);
 export const adminOnly = requireRole(Role.ADMIN);
-export const volunteerOrAdmin = requireRole(Role.VOLUNTEER, Role.ADMIN);
-export const orgOrAdmin = requireRole(Role.ORGANIZATION, Role.ADMIN);

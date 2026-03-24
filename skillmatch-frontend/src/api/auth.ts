@@ -20,7 +20,7 @@ export const authApi = {
         api.post('/auth/refresh-token', { refreshToken }),
 
     me: () =>
-        api.get<{ success: boolean; user: User }>('/auth/me'),
+        api.get<{ success: boolean; message: string; data: User }>('/auth/me'),
 
     forgotPassword: (email: string) =>
         api.post('/auth/forgot-password', { email }),

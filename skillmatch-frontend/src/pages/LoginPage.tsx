@@ -18,9 +18,10 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
         try {
-            const { data } = await authApi.login({ email, password });
-            localStorage.setItem('accessToken', data.tokens.accessToken);
-            localStorage.setItem('refreshToken', data.tokens.refreshToken);
+            const res = await authApi.login({ email, password });
+            const { tokens } = res.data.data;
+            localStorage.setItem('accessToken', tokens.accessToken);
+            localStorage.setItem('refreshToken', tokens.refreshToken);
             navigate('/app/discover');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Invalid credentials. Please try again.');

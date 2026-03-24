@@ -16,8 +16,8 @@ export default function ProfilePage() {
     useEffect(() => {
         authApi.me()
             .then(res => {
-                setUser(res.data.user);
-                if (res.data.user.role === 'VOLUNTEER') {
+                setUser(res.data.data);
+                if (res.data.data.role === 'VOLUNTEER') {
                     return volunteerApi.getMyProfile()
                         .then(p => setProfile(p.data.data))
                         .catch(() => {});
