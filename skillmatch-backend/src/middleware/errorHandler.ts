@@ -23,13 +23,15 @@ export const errorHandler = (
   console.error(err.message, err.stack);
 
   if (err instanceof ZodError) {
+    const fieldErrors = err.errors.map((e) => ({
+      field: e.path.join('.'),
+      message: e.message,
+    }));
+    const message = fieldErrors.map((e) => e.message).join('. ');
     res.status(400).json({
       success: false,
-      message: 'Validation failed',
-      errors: err.errors.map((e) => ({
-        field: e.path.join('.'),
-        message: e.message,
-      })),
+      message,
+      errors: fieldErrors,
     });
     return;
   }

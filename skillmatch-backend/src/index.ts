@@ -42,10 +42,23 @@ app.use('/api/auth', authRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
+async function connectWithRetry(retries = 5, delay = 3000): Promise<void> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await prisma.$connect();
+      console.log('Database connected');
+      return;
+    } catch {
+      if (i === retries - 1) throw new Error('Could not connect to database after multiple attempts');
+      console.log(`Database not ready, retrying in ${delay / 1000}s... (${i + 1}/${retries})`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+}
+
 async function bootstrap() {
   try {
-    await prisma.$connect();
-    console.log('Database connected');
+    await connectWithRetry();
 
     app.listen(env.port, () => {
       console.log(`SkillMatch API running on http://localhost:${env.port}`);

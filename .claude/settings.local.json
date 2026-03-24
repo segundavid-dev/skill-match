@@ -9,7 +9,15 @@
       "Bash(netstat -ano)",
       "Bash(findstr :5432)",
       "Bash(docker compose:*)",
-      "Bash(docker volume:*)"
+      "Bash(docker volume:*)",
+      "Bash(node -e \"const { Role } = require\\(''@prisma/client''\\); console.log\\(Role\\);\")",
+      "Bash(node -e \"const { PrismaClient } = require\\(''@prisma/client''\\); const p = new PrismaClient\\(\\); p.$connect\\(\\).then\\(\\(\\) => { console.log\\(''Connected!''\\); p.$disconnect\\(\\); }\\).catch\\(e => console.error\\(e.message\\)\\);\")",
+      "Bash(node -e \"const { PrismaClient } = require\\(''@prisma/client''\\); const p = new PrismaClient\\(\\); p[''$connect'']\\(\\).then\\(\\(\\) => { console.log\\(''Connected!''\\); p[''$disconnect'']\\(\\); }\\).catch\\(e => console.error\\(e.message\\)\\);\")",
+      "Bash(node test-db.js)",
+      "Bash(node -e \"const pkg = require\\(''./package.json''\\); console.log\\(pkg.scripts.dev\\);\")",
+      "Bash(npx tsx:*)",
+      "Bash(node test-db2.js)",
+      "Bash(node -e \"require\\(''dotenv''\\).config\\(\\); console.log\\(process.env.DATABASE_URL\\);\")"
     ]
   }
 }
