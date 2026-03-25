@@ -14,7 +14,13 @@ export default function ChatPage() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const currentUserId = 'me'; // TODO: get from auth context
+    const currentUserId = (() => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) return '';
+            return JSON.parse(atob(token.split('.')[1])).userId || '';
+        } catch { return ''; }
+    })();
 
     useEffect(() => {
         if (!roomId) return;

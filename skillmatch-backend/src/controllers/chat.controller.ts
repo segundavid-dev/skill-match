@@ -29,7 +29,9 @@ export const chatController = {
           },
           match: {
             include: {
-              opportunity: { select: { id: true, title: true } },
+              opportunity: {
+                include: { org: { select: { name: true, logo: true } } },
+              },
             },
           },
         },
