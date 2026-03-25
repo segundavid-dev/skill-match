@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -7,10 +8,20 @@ import morgan from 'morgan';
 import { env } from './config/env';
 import { prisma } from './config/prisma';
 import { errorHandler, notFound } from './middleware/errorHandler';
+import { initIO } from './sockets';
 
 import authRoutes from './routes/auth.routes';
+import volunteerRoutes from './routes/volunteer.routes';
+import orgRoutes from './routes/org.routes';
+import opportunityRoutes from './routes/opportunity.routes';
+import swipeRoutes from './routes/swipe.routes';
+import chatRoutes from './routes/chat.routes';
+import dashboardRoutes from './routes/dashboard.routes';
+import participationRoutes from './routes/participation.routes';
+import ratingRoutes from './routes/rating.routes';
 
 const app = express();
+const server = http.createServer(app);
 
 app.use(helmet());
 app.use(
@@ -37,10 +48,22 @@ app.get('/health', async (_req, res) => {
   }
 });
 
+// ── API Routes ──────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/api/volunteer/profile', volunteerRoutes);
+app.use('/api/org/profile', orgRoutes);
+app.use('/api/opportunities', opportunityRoutes);
+app.use('/api/swipe', swipeRoutes);
+app.use('/api/chats', chatRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/participation', participationRoutes);
+app.use('/api/rating', ratingRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
+
+// Initialize Socket.IO
+initIO(server);
 
 async function connectWithRetry(retries = 5, delay = 3000): Promise<void> {
   for (let i = 0; i < retries; i++) {
@@ -61,7 +84,7 @@ async function bootstrap() {
   try {
     await connectWithRetry();
 
-    app.listen(env.port, () => {
+    server.listen(env.port, () => {
       console.log(`SkillMatch API running on http://localhost:${env.port}`);
       console.log(`Health check: http://localhost:${env.port}/health`);
     });
@@ -73,4 +96,4 @@ async function bootstrap() {
 
 bootstrap();
 
-export { app };
+export { app, server };
