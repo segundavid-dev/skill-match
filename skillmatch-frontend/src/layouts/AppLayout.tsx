@@ -9,9 +9,22 @@ import Logo from '../components/Logo';
 import BottomNav from '../components/BottomNav';
 import { healthApi } from '../api';
 
+function getUserInitial(): string {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return '?';
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email: string = payload.email || '';
+        return email.charAt(0).toUpperCase() || '?';
+    } catch {
+        return '?';
+    }
+}
+
 export default function AppLayout() {
     const navigate = useNavigate();
     const [status, setStatus] = useState<string>('checking...');
+    const initial = getUserInitial();
 
     useEffect(() => {
         healthApi.check()
@@ -72,7 +85,7 @@ export default function AppLayout() {
                             cursor: 'pointer',
                         }}
                     >
-                        A
+                        {initial}
                     </div>
                 </div>
             </header>
