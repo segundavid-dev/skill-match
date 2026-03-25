@@ -163,9 +163,9 @@ export default function LandingPage() {
                     --sm-accent-hover: #34d399;
                     --sm-accent-subtle: rgba(16, 185, 129, 0.08);
                     --sm-accent-border: rgba(16, 185, 129, 0.2);
-                    --sm-radius: 8px;
-                    --sm-radius-lg: 12px;
-                    --sm-font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+                    --sm-radius: 100px;
+                    --sm-radius-lg: 16px;
+                    --sm-font: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
                 }
 
                 .sm-landing * { box-sizing: border-box; }
@@ -205,17 +205,18 @@ export default function LandingPage() {
                     text-decoration: none;
                 }
                 .sm-btn-primary {
-                    padding: 12px 28px;
+                    padding: 14px 32px;
                     border-radius: var(--sm-radius);
                     background: var(--sm-accent);
                     color: #09090b;
                 }
                 .sm-btn-primary:hover {
                     background: var(--sm-accent-hover);
-                    box-shadow: 0 0 24px rgba(16, 185, 129, 0.25);
+                    box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+                    transform: translateY(-1px);
                 }
                 .sm-btn-secondary {
-                    padding: 12px 28px;
+                    padding: 14px 32px;
                     border-radius: var(--sm-radius);
                     background: transparent;
                     color: var(--sm-text);
@@ -224,9 +225,10 @@ export default function LandingPage() {
                 .sm-btn-secondary:hover {
                     background: var(--sm-surface);
                     border-color: var(--sm-text-muted);
+                    transform: translateY(-1px);
                 }
                 .sm-btn-ghost {
-                    padding: 8px 16px;
+                    padding: 8px 20px;
                     border-radius: var(--sm-radius);
                     background: transparent;
                     color: var(--sm-text-secondary);
@@ -260,8 +262,8 @@ export default function LandingPage() {
                     font-family: var(--sm-font);
                     font-size: 14px;
                     color: var(--sm-text-secondary);
-                    padding: 8px 14px;
-                    border-radius: 6px;
+                    padding: 8px 16px;
+                    border-radius: 100px;
                     background: none;
                     border: none;
                     cursor: pointer;
@@ -281,7 +283,7 @@ export default function LandingPage() {
                     padding: 0 32px;
                 }
                 .sm-section-header {
-                    margin-bottom: 56px;
+                    margin-bottom: 64px;
                 }
                 .sm-label {
                     font-size: 13px;
@@ -430,23 +432,23 @@ export default function LandingPage() {
                     <div className="sm-hero-inner">
                         {/* Left — Copy */}
                         <div className="sm-hero-content">
-                            <h1 className="sm-heading sm-heading-xl sm-fade-up-1" style={{ marginBottom: 24, maxWidth: 800 }}>
-                                Your skills deserve <span style={{ color: 'var(--sm-accent)' }}>real impact.</span>
+                            <h1 className="sm-heading sm-heading-xl sm-fade-up-1" style={{ marginBottom: 28, maxWidth: 800 }}>
+                                Your skills deserve<br /><span style={{ color: 'var(--sm-accent)' }}>real impact.</span>
                             </h1>
 
-                            <p className="sm-subtext sm-fade-up-2" style={{ marginBottom: 48, fontSize: 18, maxWidth: 480 }}>
+                            <p className="sm-subtext sm-fade-up-2" style={{ marginBottom: 52, fontSize: 18, maxWidth: 520, lineHeight: 1.8 }}>
                                 SkillMatch connects volunteers with organizations that need their exact expertise.
-                                No noise — just meaningful, verified opportunities.
+                                No noise, no guesswork — just meaningful, verified opportunities matched to what you do best.
                             </p>
 
-                            <div className="sm-hero-buttons sm-fade-up-3" style={{ display: 'flex', gap: 12, marginBottom: 48 }}>
-                                <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')} style={{ padding: '14px 32px', fontSize: 15 }}>
+                            <div className="sm-hero-buttons sm-fade-up-3" style={{ display: 'flex', gap: 16, marginBottom: 56 }}>
+                                <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')} style={{ padding: '16px 36px', fontSize: 15 }}>
                                     Start Volunteering
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                                     </svg>
                                 </button>
-                                <button className="sm-btn sm-btn-secondary" onClick={goToAuth} style={{ padding: '14px 32px', fontSize: 15 }}>
+                                <button className="sm-btn sm-btn-secondary" onClick={goToAuth} style={{ padding: '16px 36px', fontSize: 15 }}>
                                     Post Opportunities
                                 </button>
                             </div>
@@ -523,20 +525,21 @@ export default function LandingPage() {
                     }}>
                         {FEATURES.map((feature) => (
                             <div key={feature.title} style={{
-                                padding: 40,
+                                padding: 48,
                                 background: 'var(--sm-bg)',
-                                transition: 'background 0.2s',
+                                transition: 'all 0.25s ease',
                             }}
                             onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--sm-surface)'; }}
                             onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--sm-bg)'; }}
                             >
                                 <div style={{
-                                    width: 44, height: 44,
-                                    borderRadius: 'var(--sm-radius)',
-                                    border: '1px solid var(--sm-border)',
+                                    width: 48, height: 48,
+                                    borderRadius: 14,
+                                    border: '1px solid var(--sm-accent-border)',
+                                    background: 'var(--sm-accent-subtle)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     color: 'var(--sm-accent)',
-                                    marginBottom: 20,
+                                    marginBottom: 24,
                                 }}>
                                     {feature.icon}
                                 </div>
@@ -725,13 +728,13 @@ export default function LandingPage() {
                         Join thousands of volunteers and organizations already making measurable impact through SkillMatch.
                     </p>
                     <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')} style={{ padding: '16px 40px', fontSize: 16 }}>
+                        <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')} style={{ padding: '18px 44px', fontSize: 16 }}>
                             Start Matching — Free
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                             </svg>
                         </button>
-                        <button className="sm-btn sm-btn-secondary" onClick={goToAuth} style={{ padding: '16px 40px', fontSize: 16 }}>
+                        <button className="sm-btn sm-btn-secondary" onClick={goToAuth} style={{ padding: '18px 44px', fontSize: 16 }}>
                             List Your Organization
                         </button>
                     </div>
