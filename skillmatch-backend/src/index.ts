@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import compression from 'compression';
 import morgan from 'morgan';
 
 import { env } from './config/env';
@@ -23,7 +22,6 @@ app.use(
   })
 );
 
-app.use(compression());
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(morgan('dev'));
@@ -33,7 +31,9 @@ app.get('/health', async (_req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     res.json({ success: true, status: 'healthy', timestamp: new Date().toISOString() });
   } catch {
-    res.status(503).json({ success: false, status: 'unhealthy', timestamp: new Date().toISOString() });
+    res
+      .status(503)
+      .json({ success: false, status: 'unhealthy', timestamp: new Date().toISOString() });
   }
 });
 
@@ -49,7 +49,8 @@ async function connectWithRetry(retries = 5, delay = 3000): Promise<void> {
       console.log('Database connected');
       return;
     } catch {
-      if (i === retries - 1) throw new Error('Could not connect to database after multiple attempts');
+      if (i === retries - 1)
+        throw new Error('Could not connect to database after multiple attempts');
       console.log(`Database not ready, retrying in ${delay / 1000}s... (${i + 1}/${retries})`);
       await new Promise((r) => setTimeout(r, delay));
     }
