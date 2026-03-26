@@ -8,7 +8,7 @@ import type {
 
 export const opportunityApi = {
     /** Public — list all active opportunities */
-    list: (params?: { page?: number; limit?: number; search?: string }) =>
+    list: (params?: { page?: number; limit?: number; search?: string; locationType?: string; skillId?: string }) =>
         api.get<PaginatedResponse<Opportunity>>('/opportunities', { params }),
 
     /** Public — get a single opportunity by id */
