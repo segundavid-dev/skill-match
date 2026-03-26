@@ -18,4 +18,8 @@ export const swipeApi = {
     /** Get all matches for the current user */
     getMatches: () =>
         api.get<ApiResponse<Match[]>>('/swipe/matches'),
+
+    /** Org swipes on a volunteer for an opportunity */
+    orgSwipe: (payload: { opportunityId: string; volunteerId: string; direction: 'LEFT' | 'RIGHT' }) =>
+        api.post<ApiResponse<{ match?: Match; isMutualMatch?: boolean }>>('/swipe', payload),
 };

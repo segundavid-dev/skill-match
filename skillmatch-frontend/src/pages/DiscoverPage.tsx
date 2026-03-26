@@ -4,16 +4,33 @@
 
 import React, { useEffect, useState } from 'react';
 import { swipeApi } from '../api';
-import type { Opportunity } from '../types';
+import type { Opportunity, Skill } from '../types';
+
+interface FeedItem extends Opportunity {
+    matchScore?: number;
+}
+
+/** Normalize requiredSkills from join-table shape to flat Skill[] */
+function normalizeSkills(opp: any): Skill[] {
+    if (!opp.requiredSkills) return [];
+    return opp.requiredSkills.map((rs: any) => rs.skill ? rs.skill : rs);
+}
 
 export default function DiscoverPage() {
-    const [feed, setFeed] = useState<Opportunity[]>([]);
+    const [feed, setFeed] = useState<FeedItem[]>([]);
     const [current, setCurrent] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         swipeApi.getFeed()
-            .then(res => { setFeed(res.data.data); setLoading(false); })
+            .then(res => {
+                const items = (res.data.data || []).map((opp: any) => ({
+                    ...opp,
+                    requiredSkills: normalizeSkills(opp),
+                }));
+                setFeed(items);
+                setLoading(false);
+            })
             .catch(() => setLoading(false));
     }, []);
 
@@ -80,16 +97,28 @@ export default function DiscoverPage() {
                                     {opp.org?.name || 'Organization'}
                                 </p>
                             </div>
-                            {opp.impactMetric && (
-                                <span style={{
-                                    padding: '6px 12px', borderRadius: 6,
-                                    background: 'rgba(16, 185, 129, 0.08)',
-                                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                                    color: '#10b981', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
-                                }}>
-                                    {opp.impactMetric}
-                                </span>
-                            )}
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                {opp.matchScore != null && (
+                                    <span style={{
+                                        padding: '6px 12px', borderRadius: 6,
+                                        background: 'rgba(16, 185, 129, 0.12)',
+                                        border: '1px solid rgba(16, 185, 129, 0.25)',
+                                        color: '#10b981', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap',
+                                    }}>
+                                        {Math.round(opp.matchScore)}% match
+                                    </span>
+                                )}
+                                {opp.impactMetric && (
+                                    <span style={{
+                                        padding: '6px 12px', borderRadius: 6,
+                                        background: 'rgba(16, 185, 129, 0.08)',
+                                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                                        color: '#10b981', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+                                    }}>
+                                        {opp.impactMetric}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         {/* Description */}

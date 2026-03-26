@@ -4,23 +4,25 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi, volunteerApi } from '../api';
-import type { User, VolunteerProfile } from '../types';
+import { authApi, volunteerApi, orgApi } from '../api';
+import type { User, VolunteerProfile, OrganizationProfile } from '../types';
 
 export default function ProfilePage() {
     const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<VolunteerProfile | null>(null);
+    const [volProfile, setVolProfile] = useState<VolunteerProfile | null>(null);
+    const [orgProfile, setOrgProfile] = useState<OrganizationProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         authApi.me()
-            .then(res => {
-                setUser(res.data.data);
-                if (res.data.data.role === 'VOLUNTEER') {
-                    return volunteerApi.getMyProfile()
-                        .then(p => setProfile(p.data.data))
-                        .catch(() => {});
+            .then(async res => {
+                const u = res.data.data;
+                setUser(u);
+                if (u.role === 'VOLUNTEER') {
+                    try { const p = await volunteerApi.getMyProfile(); setVolProfile(p.data.data); } catch {}
+                } else if (u.role === 'ORGANIZATION') {
+                    try { const p = await orgApi.getMyProfile(); setOrgProfile(p.data.data); } catch {}
                 }
             })
             .catch(() => {})
@@ -39,6 +41,27 @@ export default function ProfilePage() {
         return <div style={{ textAlign: 'center', padding: '80px 0', color: '#71717a' }}>Loading...</div>;
     }
 
+    const displayName = volProfile?.fullName || orgProfile?.name || user?.email || 'User';
+    const initial = displayName[0]?.toUpperCase() || 'U';
+
+    const profileDetails = volProfile
+        ? [
+            { label: 'Bio', value: volProfile.bio || 'Not set' },
+            { label: 'Location', value: volProfile.location || 'Not set' },
+            { label: 'Availability', value: volProfile.availability?.join(', ') || 'Not set' },
+            { label: 'Causes', value: volProfile.causes?.join(', ') || 'Not set' },
+            { label: 'Impact Score', value: String(volProfile.impactScore) },
+        ]
+        : orgProfile
+        ? [
+            { label: 'Mission', value: orgProfile.mission || 'Not set' },
+            { label: 'Website', value: orgProfile.website || 'Not set' },
+            { label: 'Location', value: orgProfile.location || 'Not set' },
+            { label: 'Focus Areas', value: orgProfile.causeTags?.join(', ') || 'Not set' },
+            { label: 'Verified', value: orgProfile.verifiedBadge ? 'Yes' : 'No' },
+        ]
+        : [];
+
     return (
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 24px' }}>
             <div style={{ marginBottom: 32 }}>
@@ -55,8 +78,7 @@ export default function ProfilePage() {
                 borderRadius: 12, border: '1px solid #27272a', overflow: 'hidden', marginBottom: 24,
             }}>
                 <div style={{
-                    padding: '24px 20px',
-                    background: '#18181b',
+                    padding: '24px 20px', background: '#18181b',
                     display: 'flex', alignItems: 'center', gap: 16,
                 }}>
                     <div style={{
@@ -65,15 +87,13 @@ export default function ProfilePage() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 22, fontWeight: 700, color: '#10b981',
                     }}>
-                        {profile?.fullName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                        {initial}
                     </div>
                     <div>
                         <div style={{ fontSize: 18, fontWeight: 600, color: '#fafafa' }}>
-                            {profile?.fullName || user?.email || 'User'}
+                            {displayName}
                         </div>
-                        <div style={{ fontSize: 13, color: '#71717a' }}>
-                            {user?.email}
-                        </div>
+                        <div style={{ fontSize: 13, color: '#71717a' }}>{user?.email}</div>
                         <div style={{
                             display: 'inline-block', marginTop: 4,
                             padding: '2px 8px', borderRadius: 4,
@@ -87,20 +107,14 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile details */}
-            {profile && (
+            {profileDetails.length > 0 && (
                 <div style={{
                     borderRadius: 12, border: '1px solid #27272a', overflow: 'hidden', marginBottom: 24,
                 }}>
-                    {[
-                        { label: 'Bio', value: profile.bio || 'Not set' },
-                        { label: 'Location', value: profile.location || 'Not set' },
-                        { label: 'Availability', value: profile.availability?.join(', ') || 'Not set' },
-                        { label: 'Causes', value: profile.causes?.join(', ') || 'Not set' },
-                        { label: 'Impact Score', value: String(profile.impactScore) },
-                    ].map((item, i) => (
+                    {profileDetails.map((item, i) => (
                         <div key={item.label} style={{
                             padding: '16px 20px', background: '#18181b',
-                            borderBottom: i < 4 ? '1px solid #27272a' : 'none',
+                            borderBottom: i < profileDetails.length - 1 ? '1px solid #27272a' : 'none',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         }}>
                             <span style={{ fontSize: 14, color: '#a1a1aa' }}>{item.label}</span>
@@ -113,9 +127,7 @@ export default function ProfilePage() {
             )}
 
             {/* Actions */}
-            <div style={{
-                borderRadius: 12, border: '1px solid #27272a', overflow: 'hidden',
-            }}>
+            <div style={{ borderRadius: 12, border: '1px solid #27272a', overflow: 'hidden' }}>
                 <button
                     onClick={handleLogout}
                     style={{
@@ -125,8 +137,8 @@ export default function ProfilePage() {
                         cursor: 'pointer', textAlign: 'left',
                         transition: 'background 0.15s',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#1f1f23'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#18181b'}
+                    onMouseEnter={e => e.currentTarget.style.background = '#1f1f23'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#18181b'}
                 >
                     Sign Out
                 </button>
