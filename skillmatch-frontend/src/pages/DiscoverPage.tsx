@@ -2,7 +2,7 @@
  * Discover Page — Swipe-based opportunity feed + search/filter
  * ──────────────────────────────────────────────────────────────────────────── */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { swipeApi, opportunityApi } from '../api';
 import { ratingApi } from '../api/dashboard';
 import type { Opportunity, Skill } from '../types';
@@ -51,14 +51,47 @@ export default function DiscoverPage() {
         ratingApi.getSkills().then(res => setAllSkills(res.data.data || [])).catch(() => {});
     }, []);
 
-    const handleSwipe = async (direction: 'LEFT' | 'RIGHT') => {
+    // Touch/drag swipe gesture state
+    const cardRef = useRef<HTMLDivElement>(null);
+    const dragStart = useRef<{ x: number; y: number } | null>(null);
+    const [dragOffset, setDragOffset] = useState(0);
+    const [swiping, setSwiping] = useState(false);
+
+    const handleSwipe = useCallback(async (direction: 'LEFT' | 'RIGHT') => {
         if (!feed[current]) return;
+        setSwiping(true);
+        setDragOffset(direction === 'RIGHT' ? 400 : -400);
+        await new Promise(r => setTimeout(r, 250));
         try {
             await swipeApi.swipe({ opportunityId: feed[current].id, direction });
-            setCurrent(c => c + 1);
         } catch (err) {
             console.error('Swipe failed:', err);
         }
+        setCurrent(c => c + 1);
+        setDragOffset(0);
+        setSwiping(false);
+    }, [feed, current]);
+
+    const onPointerDown = (e: React.PointerEvent) => {
+        dragStart.current = { x: e.clientX, y: e.clientY };
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    };
+    const onPointerMove = (e: React.PointerEvent) => {
+        if (!dragStart.current || swiping) return;
+        const dx = e.clientX - dragStart.current.x;
+        setDragOffset(dx);
+    };
+    const onPointerUp = () => {
+        if (!dragStart.current || swiping) return;
+        const threshold = 80;
+        if (dragOffset > threshold) {
+            handleSwipe('RIGHT');
+        } else if (dragOffset < -threshold) {
+            handleSwipe('LEFT');
+        } else {
+            setDragOffset(0);
+        }
+        dragStart.current = null;
     };
 
     const handleSearch = async () => {
@@ -278,11 +311,39 @@ export default function DiscoverPage() {
                 </div>
             ) : (
                 <>
-                    {/* Opportunity card */}
-                    <div style={{
-                        borderRadius: 12, border: '1px solid #27272a',
-                        background: '#18181b', overflow: 'hidden',
-                    }}>
+                    {/* Opportunity card — draggable */}
+                    <div
+                        ref={cardRef}
+                        onPointerDown={onPointerDown}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={onPointerUp}
+                        onPointerCancel={onPointerUp}
+                        style={{
+                            borderRadius: 12, border: '1px solid #27272a',
+                            background: '#18181b', overflow: 'hidden',
+                            transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)`,
+                            transition: swiping ? 'transform 0.25s ease' : (dragStart.current ? 'none' : 'transform 0.3s ease'),
+                            touchAction: 'pan-y',
+                            cursor: 'grab',
+                            userSelect: 'none',
+                            position: 'relative',
+                        }}
+                    >
+                        {/* Swipe direction indicator */}
+                        {dragOffset !== 0 && (
+                            <div style={{
+                                position: 'absolute', top: 24, zIndex: 10,
+                                ...(dragOffset > 0 ? { left: 24 } : { right: 24 }),
+                                padding: '8px 16px', borderRadius: 8,
+                                border: `2px solid ${dragOffset > 0 ? '#10b981' : '#ef4444'}`,
+                                color: dragOffset > 0 ? '#10b981' : '#ef4444',
+                                fontSize: 16, fontWeight: 700,
+                                opacity: Math.min(Math.abs(dragOffset) / 80, 1),
+                                transform: `rotate(${dragOffset > 0 ? -12 : 12}deg)`,
+                            }}>
+                                {dragOffset > 0 ? 'LIKE' : 'PASS'}
+                            </div>
+                        )}
                         <div style={{
                             padding: '24px 24px 0',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
@@ -374,7 +435,7 @@ export default function DiscoverPage() {
                     </div>
 
                     <div style={{ textAlign: 'center', marginTop: 16, fontSize: 13, color: '#71717a' }}>
-                        {current + 1} of {feed.length}
+                        {current + 1} of {feed.length} &middot; Swipe or use buttons
                     </div>
                 </>
             )}

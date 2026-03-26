@@ -70,7 +70,7 @@ export const swipeController = {
               requiredSkills: { include: { skill: { select: { id: true, name: true } } } },
             },
           });
-          return { ...opp, matchScore: item.score };
+          return { ...opp, matchScore: item.score.total };
         })
       );
 
