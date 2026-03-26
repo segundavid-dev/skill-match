@@ -26,6 +26,7 @@ router.get('/:id', opportunityController.getById);
 router.use(authenticate);
 router.get('/me/list', orgOnly, opportunityController.getMyOpportunities);
 router.post('/', orgOnly, validate(createSchema), opportunityController.create);
+router.get('/:id/applicants', orgOnly, opportunityController.getApplicants);
 router.put('/:id', orgOnly, validate(createSchema.partial()), opportunityController.update);
 router.delete('/:id', opportunityController.remove);
 

@@ -30,4 +30,8 @@ export const opportunityApi = {
     /** Delete an opportunity */
     remove: (id: string) =>
         api.delete(`/opportunities/${id}`),
+
+    /** Org only — get applicants (matched volunteers) for an opportunity */
+    getApplicants: (id: string) =>
+        api.get<ApiResponse<{ opportunity: Opportunity; matches: any[] }>>(`/opportunities/${id}/applicants`),
 };

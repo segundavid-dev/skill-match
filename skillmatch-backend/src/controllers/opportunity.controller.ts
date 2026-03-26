@@ -142,4 +142,29 @@ export const opportunityController = {
       sendSuccess(res, opps);
     } catch (err) { next(err); }
   },
+
+  async getApplicants(req: Request, res: Response, next: NextFunction) {
+    try {
+      const org = await prisma.organizationProfile.findUnique({ where: { userId: req.user!.userId } });
+      if (!org) throw new AppError('Organization profile not found', 404);
+
+      const opp = await prisma.opportunity.findUnique({ where: { id: req.params.id } });
+      if (!opp || opp.orgId !== org.id) return sendForbidden(res, 'Not your opportunity');
+
+      const matches = await prisma.match.findMany({
+        where: { opportunityId: opp.id },
+        include: {
+          volunteer: {
+            include: {
+              skills: { include: { skill: { select: { id: true, name: true } } } },
+              user: { select: { email: true } },
+            },
+          },
+          chatRoom: { select: { id: true } },
+        },
+        orderBy: { matchScore: 'desc' },
+      });
+      sendSuccess(res, { opportunity: opp, matches });
+    } catch (err) { next(err); }
+  },
 };
