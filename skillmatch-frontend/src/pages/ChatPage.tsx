@@ -24,13 +24,29 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
+    const [otherName, setOtherName] = useState('Conversation');
+    const [otherInitial, setOtherInitial] = useState('C');
     const scrollRef = useRef<HTMLDivElement>(null);
     const socketRef = useRef<Socket | null>(null);
     const currentUserId = getCurrentUserId();
 
-    // Load initial messages
+    // Load room metadata + initial messages
     useEffect(() => {
         if (!roomId) return;
+
+        // Fetch room to get participant names
+        chatApi.getRoom(roomId).then(res => {
+            const room = res.data.data;
+            const other = room.participants?.find((p: any) => p.user?.id !== currentUserId);
+            if (other?.user) {
+                const name = other.user.volunteerProfile?.fullName
+                    || other.user.orgProfile?.name
+                    || 'Chat';
+                setOtherName(name);
+                setOtherInitial(name[0]?.toUpperCase() || 'C');
+            }
+        }).catch(() => {});
+
         chatApi.getMessages(roomId)
             .then(res => { setMessages(res.data.data); setLoading(false); })
             .catch(() => setLoading(false));
@@ -116,10 +132,10 @@ export default function ChatPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 13, fontWeight: 700, color: '#10b981',
                 }}>
-                    C
+                    {otherInitial}
                 </div>
                 <div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa' }}>Conversation</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa' }}>{otherName}</div>
                     <div style={{ fontSize: 12, color: '#71717a' }}>
                         {socketRef.current?.connected ? 'Online' : 'Connecting...'}
                     </div>

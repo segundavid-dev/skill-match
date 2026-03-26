@@ -18,4 +18,8 @@ export const chatApi = {
     /** Send a message to a chat room */
     sendMessage: (roomId: string, payload: SendMessagePayload) =>
         api.post<ApiResponse<Message>>(`/chats/${roomId}/messages`, payload),
+
+    /** Get a single chat room with participants and match info */
+    getRoom: (roomId: string) =>
+        api.get<ApiResponse<ChatRoom>>(`/chats/${roomId}`),
 };
