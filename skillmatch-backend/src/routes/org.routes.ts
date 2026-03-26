@@ -20,7 +20,7 @@ router.use(authenticate);
 router.post('/', orgOnly, validate(profileSchema), orgController.createProfile);
 router.get('/', orgOnly, orgController.getMyProfile);
 router.put('/', orgOnly, validate(profileSchema.partial()), orgController.updateProfile);
-router.post('/logo', orgOnly, upload.single('logo'), orgController.uploadLogo);
+router.post('/logo', orgOnly, upload.single('logo') as any, orgController.uploadLogo);
 router.get('/:id', orgController.getProfileById);
 
 export default router;

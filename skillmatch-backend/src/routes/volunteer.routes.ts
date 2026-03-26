@@ -23,7 +23,7 @@ router.use(authenticate);
 router.post('/', volunteerOnly, validate(profileSchema), volunteerController.createProfile);
 router.get('/', volunteerOnly, volunteerController.getMyProfile);
 router.put('/', volunteerOnly, validate(updateSchema), volunteerController.updateProfile);
-router.post('/avatar', volunteerOnly, upload.single('avatar'), volunteerController.uploadAvatar);
+router.post('/avatar', volunteerOnly, upload.single('avatar') as any, volunteerController.uploadAvatar);
 router.get('/:id', volunteerController.getProfileById);
 router.get('/:id/ratings', volunteerController.getRatings);
 
