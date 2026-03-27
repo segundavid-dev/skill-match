@@ -66,23 +66,29 @@ export default function DiscoverPage() {
     const dragStart = useRef<{ x: number; y: number } | null>(null);
     const [dragOffset, setDragOffset] = useState(0);
     const [swiping, setSwiping] = useState(false);
+    const [exitingDirection, setExitingDirection] = useState<'LEFT' | 'RIGHT' | null>(null);
 
     const handleSwipe = useCallback(async (direction: 'LEFT' | 'RIGHT') => {
-        if (!feed[current]) return;
+        if (!feed[current] || swiping) return;
         setSwiping(true);
-        setDragOffset(direction === 'RIGHT' ? 400 : -400);
-        await new Promise(r => setTimeout(r, 250));
-        try {
-            await swipeApi.swipe({ opportunityId: feed[current].id, direction });
-        } catch (err) {
-            console.error('Swipe failed:', err);
-        }
+        setExitingDirection(direction);
+        setDragOffset(direction === 'RIGHT' ? window.innerWidth + 200 : -(window.innerWidth + 200));
+
+        // Fire API in parallel with animation
+        const swipePromise = swipeApi.swipe({ opportunityId: feed[current].id, direction })
+            .catch(err => console.error('Swipe failed:', err));
+
+        await new Promise(r => setTimeout(r, 350));
+        await swipePromise;
+
         setCurrent(c => c + 1);
         setDragOffset(0);
+        setExitingDirection(null);
         setSwiping(false);
-    }, [feed, current]);
+    }, [feed, current, swiping]);
 
     const onPointerDown = (e: React.PointerEvent) => {
+        if (swiping) return;
         dragStart.current = { x: e.clientX, y: e.clientY };
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     };
@@ -358,9 +364,12 @@ export default function DiscoverPage() {
                             borderRadius: 12, border: '1px solid #27272a',
                             background: '#18181b', overflow: 'hidden',
                             transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)`,
-                            transition: swiping ? 'transform 0.25s ease' : (dragStart.current ? 'none' : 'transform 0.3s ease'),
+                            opacity: exitingDirection ? 0 : 1,
+                            transition: exitingDirection
+                                ? 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in'
+                                : (dragStart.current ? 'none' : 'transform 0.3s ease, opacity 0.3s ease'),
                             touchAction: 'pan-y',
-                            cursor: 'grab',
+                            cursor: swiping ? 'default' : 'grab',
                             userSelect: 'none',
                             position: 'relative',
                         }}
@@ -445,23 +454,23 @@ export default function DiscoverPage() {
 
                     {/* Swipe actions */}
                     <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 24 }}>
-                        <button onClick={() => handleSwipe('LEFT')} style={{
+                        <button onClick={() => handleSwipe('LEFT')} disabled={swiping} style={{
                             width: 56, height: 56, borderRadius: '50%',
                             border: '1px solid #27272a', background: '#18181b',
-                            color: '#ef4444', cursor: 'pointer',
+                            color: '#ef4444', cursor: swiping ? 'default' : 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            transition: 'all 0.15s',
+                            transition: 'all 0.15s', opacity: swiping ? 0.5 : 1,
                         }}>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
                             </svg>
                         </button>
-                        <button onClick={() => handleSwipe('RIGHT')} style={{
+                        <button onClick={() => handleSwipe('RIGHT')} disabled={swiping} style={{
                             width: 56, height: 56, borderRadius: '50%',
                             border: 'none', background: '#10b981',
-                            color: '#09090b', cursor: 'pointer',
+                            color: '#09090b', cursor: swiping ? 'default' : 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            transition: 'all 0.15s',
+                            transition: 'all 0.15s', opacity: swiping ? 0.5 : 1,
                             boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)',
                         }}>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
