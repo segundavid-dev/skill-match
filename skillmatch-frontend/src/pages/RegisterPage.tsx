@@ -20,8 +20,11 @@ export default function RegisterPage() {
         setError('');
         setLoading(true);
         try {
-            await authApi.register({ email, password, role });
-            navigate('/login');
+            const res = await authApi.register({ email, password, role });
+            const { tokens } = res.data.data;
+            localStorage.setItem('accessToken', tokens.accessToken);
+            localStorage.setItem('refreshToken', tokens.refreshToken);
+            navigate('/onboarding');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Registration failed. Please try again.');
         } finally {

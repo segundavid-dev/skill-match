@@ -26,6 +26,7 @@ export const dashboardController = {
             opportunity: {
               include: { org: { select: { name: true, logo: true } } },
             },
+            chatRoom: { select: { id: true } },
           },
           orderBy: { createdAt: 'desc' },
           take: 5,
@@ -89,6 +90,7 @@ export const dashboardController = {
               },
             },
             opportunity: { select: { title: true } },
+            chatRoom: { select: { id: true } },
           },
           orderBy: { createdAt: 'desc' },
           take: 5,

@@ -17,6 +17,8 @@ import MessagesPage from './pages/MessagesPage';
 import ChatPage from './pages/ChatPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import CreateOpportunityPage from './pages/CreateOpportunityPage';
+import OpportunityApplicantsPage from './pages/OpportunityApplicantsPage';
 
 export default function App() {
     return (
@@ -37,6 +39,8 @@ export default function App() {
                     <Route path="messages/:roomId" element={<ChatPage />} />
                     <Route path="dashboard" element={<DashboardPage />} />
                     <Route path="profile" element={<ProfilePage />} />
+                    <Route path="create-opportunity" element={<CreateOpportunityPage />} />
+                    <Route path="opportunities/:id/applicants" element={<OpportunityApplicantsPage />} />
                 </Route>
 
                 {/* ── Fallback ──────────────────────────────────────────────── */}

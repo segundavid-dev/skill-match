@@ -1,11 +1,22 @@
 /* ─────────────────────────────────────────────────────────────────────────────
- * Chat Page — Individual conversation thread
+ * Chat Page — Individual conversation thread with real-time WebSocket
  * ──────────────────────────────────────────────────────────────────────────── */
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
 import { chatApi } from '../api';
 import type { Message } from '../types';
+
+const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000';
+
+function getCurrentUserId(): string {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return '';
+        return JSON.parse(atob(token.split('.')[1])).userId || '';
+    } catch { return ''; }
+}
 
 export default function ChatPage() {
     const { roomId } = useParams<{ roomId: string }>();
@@ -13,28 +24,85 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
+    const [otherName, setOtherName] = useState('Conversation');
+    const [otherInitial, setOtherInitial] = useState('C');
     const scrollRef = useRef<HTMLDivElement>(null);
-    const currentUserId = 'me'; // TODO: get from auth context
+    const socketRef = useRef<Socket | null>(null);
+    const currentUserId = getCurrentUserId();
 
+    // Load room metadata + initial messages
     useEffect(() => {
         if (!roomId) return;
+
+        // Fetch room to get participant names
+        chatApi.getRoom(roomId).then(res => {
+            const room = res.data.data;
+            const other = room.participants?.find((p: any) => p.user?.id !== currentUserId);
+            if (other?.user) {
+                const name = other.user.volunteerProfile?.fullName
+                    || other.user.orgProfile?.name
+                    || 'Chat';
+                setOtherName(name);
+                setOtherInitial(name[0]?.toUpperCase() || 'C');
+            }
+        }).catch(() => {});
+
         chatApi.getMessages(roomId)
             .then(res => { setMessages(res.data.data); setLoading(false); })
             .catch(() => setLoading(false));
     }, [roomId]);
 
+    // Connect to Socket.IO
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (!roomId || !token) return;
+
+        const socket = io(SOCKET_URL, {
+            auth: { token },
+            transports: ['websocket', 'polling'],
+        });
+
+        socket.on('connect', () => {
+            socket.emit('join_room', roomId);
+        });
+
+        socket.on('new_message', (message: Message) => {
+            setMessages(prev => {
+                // Avoid duplicates (in case we already added it optimistically)
+                if (prev.some(m => m.id === message.id)) return prev;
+                return [...prev, message];
+            });
+        });
+
+        socketRef.current = socket;
+
+        return () => {
+            socket.emit('leave_room', roomId);
+            socket.disconnect();
+            socketRef.current = null;
+        };
+    }, [roomId]);
+
+    // Auto-scroll on new messages
     useEffect(() => {
         scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
     }, [messages]);
 
     const handleSend = async () => {
         if (!input.trim() || !roomId) return;
-        try {
-            const { data } = await chatApi.sendMessage(roomId, { content: input.trim() });
-            setMessages(prev => [...prev, data.data]);
-            setInput('');
-        } catch (err) {
-            console.error('Send failed:', err);
+        const content = input.trim();
+        setInput('');
+
+        // Send via WebSocket if connected, otherwise fall back to REST
+        if (socketRef.current?.connected) {
+            socketRef.current.emit('send_message', { roomId, content });
+        } else {
+            try {
+                const { data } = await chatApi.sendMessage(roomId, { content });
+                setMessages(prev => [...prev, data.data]);
+            } catch (err) {
+                console.error('Send failed:', err);
+            }
         }
     };
 
@@ -42,7 +110,7 @@ export default function ChatPage() {
         <div style={{
             position: 'fixed', inset: 0, background: '#09090b',
             display: 'flex', flexDirection: 'column', zIndex: 200,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: "'Space Grotesk', sans-serif",
         }}>
             {/* Header */}
             <div style={{
@@ -64,11 +132,13 @@ export default function ChatPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 13, fontWeight: 700, color: '#10b981',
                 }}>
-                    C
+                    {otherInitial}
                 </div>
                 <div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa' }}>Conversation</div>
-                    <div style={{ fontSize: 12, color: '#71717a' }}>Active now</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa' }}>{otherName}</div>
+                    <div style={{ fontSize: 12, color: '#71717a' }}>
+                        {socketRef.current?.connected ? 'Online' : 'Connecting...'}
+                    </div>
                 </div>
             </div>
 

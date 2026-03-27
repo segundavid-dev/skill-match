@@ -19,10 +19,19 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const res = await authApi.login({ email, password });
-            const { tokens } = res.data.data;
+            const { tokens, user } = res.data.data;
             localStorage.setItem('accessToken', tokens.accessToken);
             localStorage.setItem('refreshToken', tokens.refreshToken);
-            navigate('/app/discover');
+
+            // Route based on role and profile completion
+            const hasProfile = user.volunteerProfile || user.orgProfile;
+            if (!hasProfile) {
+                navigate('/onboarding');
+            } else if (user.role === 'ORGANIZATION') {
+                navigate('/app/dashboard');
+            } else {
+                navigate('/app/discover');
+            }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {

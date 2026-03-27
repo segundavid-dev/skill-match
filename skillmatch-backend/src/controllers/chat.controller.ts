@@ -29,7 +29,10 @@ export const chatController = {
           },
           match: {
             include: {
-              opportunity: { select: { id: true, title: true } },
+              volunteer: { select: { fullName: true, avatar: true } },
+              opportunity: {
+                include: { org: { select: { name: true, logo: true } } },
+              },
             },
           },
         },
@@ -37,6 +40,43 @@ export const chatController = {
       });
 
       sendSuccess(res, rooms, 'Chats fetched');
+    } catch (err) { next(err); }
+  },
+
+  async getRoom(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.userId;
+      const { roomId } = req.params;
+
+      const participant = await prisma.chatParticipant.findUnique({
+        where: { chatRoomId_userId: { chatRoomId: roomId, userId } },
+      });
+      if (!participant) return sendForbidden(res, 'You are not a member of this chat room');
+
+      const room = await prisma.chatRoom.findUnique({
+        where: { id: roomId },
+        include: {
+          participants: {
+            include: {
+              user: {
+                select: {
+                  id: true, role: true,
+                  volunteerProfile: { select: { fullName: true, avatar: true } },
+                  orgProfile: { select: { name: true, logo: true } },
+                },
+              },
+            },
+          },
+          match: {
+            include: {
+              opportunity: { select: { title: true } },
+            },
+          },
+        },
+      });
+      if (!room) return sendNotFound(res, 'Chat room not found');
+
+      sendSuccess(res, room, 'Room fetched');
     } catch (err) { next(err); }
   },
 

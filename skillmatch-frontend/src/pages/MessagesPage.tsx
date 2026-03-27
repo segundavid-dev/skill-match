@@ -7,10 +7,27 @@ import { useNavigate } from 'react-router-dom';
 import { chatApi } from '../api';
 import type { ChatRoom } from '../types';
 
+function getCurrentUserId(): string | null {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return null;
+        return JSON.parse(atob(token.split('.')[1])).userId;
+    } catch { return null; }
+}
+
+function getRoleFromToken(): string {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return 'VOLUNTEER';
+        return JSON.parse(atob(token.split('.')[1])).role || 'VOLUNTEER';
+    } catch { return 'VOLUNTEER'; }
+}
+
 export default function MessagesPage() {
     const navigate = useNavigate();
     const [rooms, setRooms] = useState<ChatRoom[]>([]);
     const [loading, setLoading] = useState(true);
+    const role = getRoleFromToken();
 
     useEffect(() => {
         chatApi.getMyChats()
@@ -25,7 +42,7 @@ export default function MessagesPage() {
                     Messages
                 </h1>
                 <p style={{ fontSize: 14, color: '#71717a' }}>
-                    Conversations with your matched organizations
+                    {role === 'ORGANIZATION' ? 'Conversations with matched volunteers' : 'Conversations with your matched organizations'}
                 </p>
             </div>
 
@@ -45,8 +62,12 @@ export default function MessagesPage() {
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 1, borderRadius: 12, overflow: 'hidden', border: '1px solid #27272a' }}>
-                    {rooms.map((room) => {
+                    {rooms.map((room: any) => {
                         const lastMessage = room.messages?.[room.messages.length - 1];
+                        const otherName = role === 'ORGANIZATION'
+                            ? room.match?.volunteer?.fullName || 'Volunteer'
+                            : room.match?.opportunity?.org?.name || 'Chat Room';
+                        const initial = otherName[0]?.toUpperCase() || 'C';
                         return (
                             <div
                                 key={room.id}
@@ -65,11 +86,11 @@ export default function MessagesPage() {
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     fontSize: 14, fontWeight: 700, color: '#10b981', flexShrink: 0,
                                 }}>
-                                    {room.match?.opportunity?.org?.name?.[0] || 'C'}
+                                    {initial}
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa', marginBottom: 2 }}>
-                                        {room.match?.opportunity?.org?.name || 'Chat Room'}
+                                        {otherName}
                                     </div>
                                     <div style={{ fontSize: 13, color: '#71717a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {lastMessage?.content || 'No messages yet'}

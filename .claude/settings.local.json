@@ -17,7 +17,12 @@
       "Bash(node -e \"const pkg = require\\(''./package.json''\\); console.log\\(pkg.scripts.dev\\);\")",
       "Bash(npx tsx:*)",
       "Bash(node test-db2.js)",
-      "Bash(node -e \"require\\(''dotenv''\\).config\\(\\); console.log\\(process.env.DATABASE_URL\\);\")"
+      "Bash(node -e \"require\\(''dotenv''\\).config\\(\\); console.log\\(process.env.DATABASE_URL\\);\")",
+      "Bash(npx vite:*)",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"fix\\(frontend\\): wire all pages to real APIs with correct data shapes:*)",
+      "Bash(npm ls:*)"
     ]
   }
 }

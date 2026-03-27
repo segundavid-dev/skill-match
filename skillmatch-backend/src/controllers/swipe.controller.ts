@@ -70,7 +70,7 @@ export const swipeController = {
               requiredSkills: { include: { skill: { select: { id: true, name: true } } } },
             },
           });
-          return { ...opp, matchScore: item.score };
+          return { ...opp, matchScore: item.score.total };
         })
       );
 
@@ -83,13 +83,21 @@ export const swipeController = {
       const userId = req.user!.userId;
       const { status, page = '1', limit = '20' } = req.query as Record<string, string>;
 
-      const profile = await prisma.volunteerProfile.findUnique({ where: { userId } });
-      if (!profile) throw new AppError('Volunteer profile not found', 404);
-
       const take = Math.min(parseInt(limit), 100);
       const skip = (parseInt(page) - 1) * take;
 
-      const where: any = { volunteerId: profile.id };
+      let where: any;
+
+      if (req.user!.role === 'ORGANIZATION') {
+        const org = await prisma.organizationProfile.findUnique({ where: { userId } });
+        if (!org) throw new AppError('Organization profile not found', 404);
+        where = { opportunity: { orgId: org.id } };
+      } else {
+        const profile = await prisma.volunteerProfile.findUnique({ where: { userId } });
+        if (!profile) throw new AppError('Volunteer profile not found', 404);
+        where = { volunteerId: profile.id };
+      }
+
       if (status) where.status = status;
 
       const [total, matches] = await Promise.all([
@@ -97,6 +105,11 @@ export const swipeController = {
         prisma.match.findMany({
           where,
           include: {
+            volunteer: {
+              include: {
+                skills: { include: { skill: { select: { id: true, name: true } } } },
+              },
+            },
             opportunity: {
               include: {
                 org: { select: { id: true, name: true, logo: true } },

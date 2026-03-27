@@ -13,6 +13,7 @@ const messageSchema = z.object({
 router.use(authenticate);
 
 router.get('/', chatController.getMyChats);
+router.get('/:roomId', chatController.getRoom);
 router.get('/:roomId/messages', chatController.getMessages);
 router.post('/:roomId/messages', validate(messageSchema), chatController.sendMessage);
 

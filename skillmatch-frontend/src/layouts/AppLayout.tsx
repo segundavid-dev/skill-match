@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
 import Logo from '../components/Logo';
 import BottomNav from '../components/BottomNav';
 import { healthApi } from '../api';
@@ -24,12 +25,30 @@ function getUserInitial(): string {
 export default function AppLayout() {
     const navigate = useNavigate();
     const [status, setStatus] = useState<string>('checking...');
+    const [matchNotif, setMatchNotif] = useState<string | null>(null);
     const initial = getUserInitial();
 
     useEffect(() => {
         healthApi.check()
             .then(res => setStatus(res.data.status))
             .catch(() => setStatus('error'));
+    }, []);
+
+    // Socket.IO: listen for new_match events
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace('/api', '');
+        const socket: Socket = io(baseUrl, { auth: { token } });
+
+        socket.on('new_match', (data: any) => {
+            const title = data?.match?.opportunity?.title || 'an opportunity';
+            setMatchNotif(`New match on "${title}"!`);
+            setTimeout(() => setMatchNotif(null), 5000);
+        });
+
+        return () => { socket.disconnect(); };
     }, []);
 
     return (
@@ -89,6 +108,19 @@ export default function AppLayout() {
                     </div>
                 </div>
             </header>
+
+            {/* ── Match notification ──────────────────────────────────── */}
+            {matchNotif && (
+                <div style={{
+                    position: 'fixed', top: 72, left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 100, padding: '12px 24px', borderRadius: 8,
+                    background: '#10b981', color: '#09090b',
+                    fontSize: 14, fontWeight: 600, boxShadow: '0 4px 24px rgba(16,185,129,0.3)',
+                    animation: 'fadeIn 0.3s ease',
+                }}>
+                    {matchNotif}
+                </div>
+            )}
 
             {/* ── Page content (rendered by nested route) ─────────────── */}
             <main>
