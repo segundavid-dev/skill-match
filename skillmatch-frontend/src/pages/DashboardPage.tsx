@@ -26,7 +26,11 @@ export default function DashboardPage() {
         const fetcher = isOrg ? dashboardApi.org() : dashboardApi.volunteer();
         fetcher
             .then(res => { setDashData(res.data.data); setLoading(false); })
-            .catch(() => { setError('Could not load dashboard'); setLoading(false); });
+            .catch(err => {
+                const msg = err.response?.data?.message || err.message || 'Could not load dashboard';
+                setError(msg);
+                setLoading(false);
+            });
     }, [isOrg]);
 
     if (loading) {
