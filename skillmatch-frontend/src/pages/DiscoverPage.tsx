@@ -24,6 +24,7 @@ export default function DiscoverPage() {
     const [feed, setFeed] = useState<FeedItem[]>([]);
     const [current, setCurrent] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [feedError, setFeedError] = useState('');
 
     // Search state
     const [searchMode, setSearchMode] = useState(false);
@@ -36,7 +37,9 @@ export default function DiscoverPage() {
     const [allSkills, setAllSkills] = useState<Skill[]>([]);
     const [selectedSkill, setSelectedSkill] = useState<string>('');
 
-    useEffect(() => {
+    const loadFeed = useCallback(() => {
+        setLoading(true);
+        setFeedError('');
         swipeApi.getFeed()
             .then(res => {
                 const items = (res.data.data || []).map((opp: any) => ({
@@ -44,12 +47,19 @@ export default function DiscoverPage() {
                     requiredSkills: normalizeSkills(opp),
                 }));
                 setFeed(items);
+                setCurrent(0);
                 setLoading(false);
             })
-            .catch(() => setLoading(false));
-
-        ratingApi.getSkills().then(res => setAllSkills(res.data.data || [])).catch(() => {});
+            .catch(err => {
+                setFeedError(err.response?.data?.message || 'Could not load feed');
+                setLoading(false);
+            });
     }, []);
+
+    useEffect(() => {
+        loadFeed();
+        ratingApi.getSkills().then(res => setAllSkills(res.data.data || [])).catch(() => {});
+    }, [loadFeed]);
 
     // Touch/drag swipe gesture state
     const cardRef = useRef<HTMLDivElement>(null);
@@ -297,6 +307,25 @@ export default function DiscoverPage() {
                 <div style={{ textAlign: 'center', padding: '80px 0', color: '#71717a' }}>
                     Loading opportunities...
                 </div>
+            ) : feedError ? (
+                <div style={{
+                    textAlign: 'center', padding: '80px 32px',
+                    borderRadius: 12, border: '1px solid #27272a', background: '#18181b',
+                }}>
+                    <div style={{ fontSize: 20, fontWeight: 600, color: '#fafafa', marginBottom: 8 }}>
+                        Could not load feed
+                    </div>
+                    <p style={{ fontSize: 14, color: '#71717a', marginBottom: 24 }}>
+                        {feedError}
+                    </p>
+                    <button onClick={loadFeed} style={{
+                        padding: '10px 24px', borderRadius: 8, border: 'none',
+                        background: '#10b981', color: '#09090b',
+                        fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    }}>
+                        Retry
+                    </button>
+                </div>
             ) : !opp ? (
                 <div style={{
                     textAlign: 'center', padding: '80px 32px',
@@ -305,9 +334,16 @@ export default function DiscoverPage() {
                     <div style={{ fontSize: 20, fontWeight: 600, color: '#fafafa', marginBottom: 8 }}>
                         All caught up
                     </div>
-                    <p style={{ fontSize: 14, color: '#71717a' }}>
+                    <p style={{ fontSize: 14, color: '#71717a', marginBottom: 24 }}>
                         No more opportunities to review. Check back later for new matches.
                     </p>
+                    <button onClick={loadFeed} style={{
+                        padding: '10px 24px', borderRadius: 8, border: 'none',
+                        background: '#10b981', color: '#09090b',
+                        fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    }}>
+                        Refresh Feed
+                    </button>
                 </div>
             ) : (
                 <>

@@ -23,7 +23,7 @@ export default function OnboardingPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [role] = useState<Role>(getRoleFromToken);
+    const [role] = useState<Role>(getRoleFromToken());
 
     // Volunteer form
     const [volForm, setVolForm] = useState<CreateVolunteerProfilePayload>({

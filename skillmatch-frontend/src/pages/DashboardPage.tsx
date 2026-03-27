@@ -17,7 +17,7 @@ function getRoleFromToken(): string {
 export default function DashboardPage() {
     const navigate = useNavigate();
     const [dashData, setDashData] = useState<any>(null);
-    const [role] = useState(getRoleFromToken);
+    const [role] = useState(getRoleFromToken());
     const isOrg = role === 'ORGANIZATION';
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');

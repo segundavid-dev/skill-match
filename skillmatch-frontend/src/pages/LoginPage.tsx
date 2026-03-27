@@ -27,6 +27,8 @@ export default function LoginPage() {
             const hasProfile = user.volunteerProfile || user.orgProfile;
             if (!hasProfile) {
                 navigate('/onboarding');
+            } else if (user.role === 'ORGANIZATION') {
+                navigate('/app/dashboard');
             } else {
                 navigate('/app/discover');
             }
