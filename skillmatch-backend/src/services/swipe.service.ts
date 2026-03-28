@@ -40,7 +40,7 @@ export const swipeService = {
 
     // Idempotent swipe upsert
     await prisma.swipe.upsert({
-      where: { userId_opportunityId: { userId, opportunityId } },
+      where: { userId_opportunityId_volunteerId: { userId, opportunityId, volunteerId } },
       update: { direction },
       create: { userId, volunteerId, opportunityId, direction },
     });
@@ -149,7 +149,7 @@ export const swipeService = {
     if (!volunteer) throw new AppError('Volunteer not found', 404);
 
     await prisma.swipe.upsert({
-      where: { userId_opportunityId: { userId: orgUserId, opportunityId } },
+      where: { userId_opportunityId_volunteerId: { userId: orgUserId, opportunityId, volunteerId } },
       update: { direction },
       create: { userId: orgUserId, volunteerId, opportunityId, direction },
     });

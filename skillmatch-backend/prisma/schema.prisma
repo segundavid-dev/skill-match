@@ -220,7 +220,7 @@ model Swipe {
   direction     SwipeDirection
   timestamp     DateTime       @default(now())
 
-  @@unique([userId, opportunityId])
+  @@unique([userId, opportunityId, volunteerId])
   @@index([userId])
   @@index([opportunityId])
   @@map("swipes")

@@ -13,6 +13,8 @@ export default function OpportunityApplicantsPage() {
     const [matches, setMatches] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [actionError, setActionError] = useState('');
+    const [swipingId, setSwipingId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -29,18 +31,23 @@ export default function OpportunityApplicantsPage() {
     }, [id]);
 
     const handleOrgSwipe = async (volunteerId: string, direction: 'LEFT' | 'RIGHT') => {
-        if (!id) return;
+        if (!id || swipingId) return;
+        setSwipingId(volunteerId);
+        setActionError('');
         try {
             const res = await swipeApi.orgSwipe({ opportunityId: id, volunteerId, direction });
-            // Update local state
             setMatches(prev => prev.map(m => {
                 if (m.volunteer?.id === volunteerId) {
-                    const newStatus = res.data.data.isMutualMatch ? 'MUTUAL' : (direction === 'RIGHT' ? 'PENDING' : 'REJECTED');
+                    const newStatus = res.data.data.isMutualMatch ? 'MUTUAL' : (direction === 'RIGHT' ? 'ORG_ACCEPTED' : 'REJECTED');
                     return { ...m, status: newStatus, chatRoom: res.data.data.match?.chatRoom || m.chatRoom };
                 }
                 return m;
             }));
-        } catch {}
+        } catch (err: any) {
+            setActionError(err.response?.data?.message || 'Failed to process action. Please try again.');
+        } finally {
+            setSwipingId(null);
+        }
     };
 
     if (loading) {
@@ -73,6 +80,17 @@ export default function OpportunityApplicantsPage() {
                 </svg>
                 Back to Dashboard
             </button>
+
+            {actionError && (
+                <div style={{
+                    padding: '12px 16px', borderRadius: 8,
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    color: '#f87171', fontSize: 14, marginBottom: 16,
+                }}>
+                    {actionError}
+                </div>
+            )}
 
             <div style={{ marginBottom: 32 }}>
                 <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>
@@ -135,11 +153,17 @@ export default function OpportunityApplicantsPage() {
                                         )}
                                         <span style={{
                                             padding: '4px 10px', borderRadius: 4,
-                                            background: match.status === 'MUTUAL' ? 'rgba(16,185,129,0.15)' : '#27272a',
-                                            color: match.status === 'MUTUAL' ? '#10b981' : '#71717a',
+                                            background: match.status === 'MUTUAL' ? 'rgba(16,185,129,0.15)'
+                                                : match.status === 'ORG_ACCEPTED' ? 'rgba(59,130,246,0.15)'
+                                                : match.status === 'REJECTED' ? 'rgba(239,68,68,0.1)'
+                                                : '#27272a',
+                                            color: match.status === 'MUTUAL' ? '#10b981'
+                                                : match.status === 'ORG_ACCEPTED' ? '#3b82f6'
+                                                : match.status === 'REJECTED' ? '#f87171'
+                                                : '#71717a',
                                             fontSize: 12, fontWeight: 600,
                                         }}>
-                                            {match.status}
+                                            {match.status === 'ORG_ACCEPTED' ? 'ACCEPTED' : match.status}
                                         </span>
                                     </div>
                                 </div>
@@ -175,20 +199,46 @@ export default function OpportunityApplicantsPage() {
                                         }}>
                                             Chat
                                         </button>
+                                    ) : match.status === 'MUTUAL' ? (
+                                        <span style={{ fontSize: 13, color: '#10b981', fontWeight: 600 }}>
+                                            Matched
+                                        </span>
+                                    ) : match.status === 'ORG_ACCEPTED' ? (
+                                        <span style={{ fontSize: 13, color: '#3b82f6', fontWeight: 500 }}>
+                                            Accepted — waiting for mutual match
+                                        </span>
+                                    ) : match.status === 'REJECTED' ? (
+                                        <span style={{ fontSize: 13, color: '#71717a', fontWeight: 500 }}>
+                                            Passed
+                                        </span>
                                     ) : match.status === 'PENDING' ? (
                                         <>
-                                            <button onClick={() => handleOrgSwipe(vol.id, 'RIGHT')} style={{
-                                                padding: '8px 20px', borderRadius: 8, border: 'none',
-                                                background: '#10b981', color: '#09090b',
-                                                fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                                            }}>
-                                                Accept
+                                            <button
+                                                onClick={() => handleOrgSwipe(vol.id, 'RIGHT')}
+                                                disabled={swipingId !== null}
+                                                style={{
+                                                    padding: '8px 20px', borderRadius: 8, border: 'none',
+                                                    background: '#10b981', color: '#09090b',
+                                                    fontSize: 13, fontWeight: 600,
+                                                    cursor: swipingId !== null ? 'not-allowed' : 'pointer',
+                                                    opacity: swipingId === vol.id ? 0.6 : swipingId !== null ? 0.4 : 1,
+                                                    transition: 'opacity 0.15s',
+                                                }}
+                                            >
+                                                {swipingId === vol.id ? 'Accepting...' : 'Accept'}
                                             </button>
-                                            <button onClick={() => handleOrgSwipe(vol.id, 'LEFT')} style={{
-                                                padding: '8px 20px', borderRadius: 8,
-                                                border: '1px solid #27272a', background: 'transparent',
-                                                color: '#71717a', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                                            }}>
+                                            <button
+                                                onClick={() => handleOrgSwipe(vol.id, 'LEFT')}
+                                                disabled={swipingId !== null}
+                                                style={{
+                                                    padding: '8px 20px', borderRadius: 8,
+                                                    border: '1px solid #27272a', background: 'transparent',
+                                                    color: '#71717a', fontSize: 13, fontWeight: 600,
+                                                    cursor: swipingId !== null ? 'not-allowed' : 'pointer',
+                                                    opacity: swipingId !== null ? 0.4 : 1,
+                                                    transition: 'opacity 0.15s',
+                                                }}
+                                            >
                                                 Pass
                                             </button>
                                         </>
