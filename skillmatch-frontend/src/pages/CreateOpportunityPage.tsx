@@ -41,8 +41,8 @@ export default function CreateOpportunityPage() {
                 ...form,
                 spotsNeeded: Number(form.spotsNeeded),
                 skillIds: selectedSkills,
-                startDate: form.startDate || undefined,
-                endDate: form.endDate || undefined,
+                startDate: form.startDate ? `${form.startDate}T00:00:00.000Z` : undefined,
+                endDate: form.endDate ? `${form.endDate}T00:00:00.000Z` : undefined,
                 location: form.location || undefined,
                 impactMetric: form.impactMetric || undefined,
             });
