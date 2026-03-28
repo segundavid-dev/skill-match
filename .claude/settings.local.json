@@ -22,7 +22,8 @@
       "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
       "Bash(git add:*)",
       "Bash(git commit -m \"fix\\(frontend\\): wire all pages to real APIs with correct data shapes:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(find /c/Users/David/Downloads/SKILLMATCH/skillmatch-backend/src -type f \\\\\\(-name *.ts -o -name *.js \\\\\\))"
     ]
   }
 }

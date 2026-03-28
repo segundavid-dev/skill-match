@@ -79,10 +79,16 @@ export const swipeService = {
     }
 
     // ── Mutual match! ─────────────────────────────────────────────────────
-    const updatedMatch = await prisma.match.update({
-      where: { id: match.id },
-      data: { status: MatchStatus.MUTUAL },
-    });
+    const [updatedMatch] = await prisma.$transaction([
+      prisma.match.update({
+        where: { id: match.id },
+        data: { status: MatchStatus.MUTUAL },
+      }),
+      prisma.opportunity.update({
+        where: { id: opportunityId },
+        data: { spotsFilled: { increment: 1 } },
+      }),
+    ]);
 
     // Create chat room for this match
     let chatRoomId: string | undefined;
@@ -178,10 +184,16 @@ export const swipeService = {
 
     if (!match) return { swiped: true, direction, isMutualMatch: false };
 
-    const updatedMatch = await prisma.match.update({
-      where: { id: match.id },
-      data: { status: MatchStatus.MUTUAL },
-    });
+    const [updatedMatch] = await prisma.$transaction([
+      prisma.match.update({
+        where: { id: match.id },
+        data: { status: MatchStatus.MUTUAL },
+      }),
+      prisma.opportunity.update({
+        where: { id: opportunityId },
+        data: { spotsFilled: { increment: 1 } },
+      }),
+    ]);
 
     let chatRoomId: string | undefined;
     try {

@@ -292,9 +292,10 @@ export default function DiscoverPage() {
                                     </div>
                                 )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: 12, color: '#71717a' }}>
-                                        {item.spotsNeeded - item.spotsFilled} spots left
-                                    </span>
+                                    <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#71717a' }}>
+                                        <span>{item.spotsNeeded - item.spotsFilled} spots left</span>
+                                        {item.searchLocation && <span>Seeking from {item.searchLocation}</span>}
+                                    </div>
                                     <button onClick={() => handleSearchSwipe(item.id)} style={{
                                         padding: '8px 20px', borderRadius: 8, border: 'none',
                                         background: '#10b981', color: '#09090b',
@@ -445,8 +446,16 @@ export default function DiscoverPage() {
                                     ))}
                                 </div>
                             )}
-                            <div style={{ display: 'flex', gap: 24, fontSize: 13, color: '#71717a' }}>
+                            <div style={{ display: 'flex', gap: 24, fontSize: 13, color: '#71717a', flexWrap: 'wrap' }}>
                                 {opp.location && <span>{opp.location}</span>}
+                                {opp.searchLocation && (
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                                        </svg>
+                                        Seeking from {opp.searchLocation}
+                                    </span>
+                                )}
                                 <span>{opp.spotsNeeded - opp.spotsFilled} spots left</span>
                             </div>
                         </div>

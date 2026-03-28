@@ -36,10 +36,6 @@ export const participationController = {
             confirmedDate: new Date(),
           },
         }),
-        prisma.opportunity.update({
-          where: { id: opportunityId },
-          data: { spotsFilled: { increment: 1 } },
-        }),
         prisma.match.update({
           where: { id: match.id },
           data: { status: 'ACCEPTED' },

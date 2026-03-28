@@ -185,6 +185,7 @@ model Opportunity {
   description   String
   locationType  LocationType      @default(REMOTE)
   location      String?
+  searchLocation String?
   startDate     DateTime?
   endDate       DateTime?
   spotsNeeded   Int               @default(1)

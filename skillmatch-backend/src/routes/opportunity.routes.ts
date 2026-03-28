@@ -11,6 +11,7 @@ const createSchema = z.object({
   description: z.string().min(20).max(2000),
   locationType: z.enum(['REMOTE', 'IN_PERSON', 'HYBRID']),
   location: z.string().max(100).optional(),
+  searchLocation: z.string().max(100).optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   spotsNeeded: z.number().int().min(1).max(1000).optional(),
