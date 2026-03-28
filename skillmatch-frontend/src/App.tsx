@@ -20,6 +20,17 @@ import ProfilePage from './pages/ProfilePage';
 import CreateOpportunityPage from './pages/CreateOpportunityPage';
 import OpportunityApplicantsPage from './pages/OpportunityApplicantsPage';
 
+function AppIndex() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            const role = JSON.parse(atob(token.split('.')[1])).role;
+            if (role === 'ORGANIZATION') return <Navigate to="/app/dashboard" replace />;
+        }
+    } catch {}
+    return <Navigate to="/app/discover" replace />;
+}
+
 export default function App() {
     return (
         <BrowserRouter>
@@ -32,7 +43,7 @@ export default function App() {
 
                 {/* ── Authenticated Routes (wrapped in AppLayout) ──────────── */}
                 <Route path="/app" element={<AppLayout />}>
-                    <Route index element={<Navigate to="/app/discover" replace />} />
+                    <Route index element={<AppIndex />} />
                     <Route path="discover" element={<DiscoverPage />} />
                     <Route path="matches" element={<MatchesPage />} />
                     <Route path="messages" element={<MessagesPage />} />
