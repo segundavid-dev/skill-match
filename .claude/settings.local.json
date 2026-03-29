@@ -25,7 +25,11 @@
       "Bash(npm ls:*)",
       "Bash(find /c/Users/David/Downloads/SKILLMATCH/skillmatch-backend/src -type f \\\\\\(-name *.ts -o -name *.js \\\\\\))",
       "Bash(npm run:*)",
-      "Bash(taskkill //PID 5588 //F)"
+      "Bash(taskkill //PID 5588 //F)",
+      "Bash(taskkill //PID 6468 //F)",
+      "Bash(curl -s -X POST http://localhost:4000/api/auth/login -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"admin@greenearth.org\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"Password123!\"\"\"\"}')",
+      "Bash(curl -s --max-time 20 -X POST http://localhost:4000/api/auth/login -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"admin@greenearth.org\"\",\"\"password\"\":\"\"Password123!\"\"}')",
+      "Bash(taskkill //PID 14900 //F)"
     ]
   }
 }

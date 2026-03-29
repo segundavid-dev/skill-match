@@ -4,7 +4,13 @@ import { env } from './env';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-const adapter = new PrismaPg({ connectionString: env.databaseUrl });
+// Use sslmode=verify-full to silence the deprecation warning and keep pool warm
+const connectionString = env.databaseUrl.replace('sslmode=require', 'sslmode=verify-full');
+
+const adapter = new PrismaPg({
+  connectionString,
+  max: 5,
+});
 
 export const prisma =
   globalForPrisma.prisma ??
