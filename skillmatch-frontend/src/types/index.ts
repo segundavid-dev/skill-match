@@ -119,6 +119,7 @@ export interface Opportunity {
     description: string;
     locationType: LocationType;
     location?: string;
+    searchLocation?: string;
     startDate?: string;
     endDate?: string;
     spotsNeeded: number;
@@ -135,6 +136,7 @@ export interface CreateOpportunityPayload {
     description: string;
     locationType: LocationType;
     location?: string;
+    searchLocation?: string;
     startDate?: string;
     endDate?: string;
     spotsNeeded?: number;

@@ -10,15 +10,17 @@ import Logo from '../components/Logo';
 import BottomNav from '../components/BottomNav';
 import { healthApi } from '../api';
 
-function getUserInitial(): string {
+function getTokenPayload(): { initial: string; role: string } {
     try {
         const token = localStorage.getItem('accessToken');
-        if (!token) return '?';
+        if (!token) return { initial: '?', role: 'VOLUNTEER' };
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const email: string = payload.email || '';
-        return email.charAt(0).toUpperCase() || '?';
+        return {
+            initial: (payload.email || '?').charAt(0).toUpperCase(),
+            role: payload.role || 'VOLUNTEER',
+        };
     } catch {
-        return '?';
+        return { initial: '?', role: 'VOLUNTEER' };
     }
 }
 
@@ -26,7 +28,8 @@ export default function AppLayout() {
     const navigate = useNavigate();
     const [status, setStatus] = useState<string>('checking...');
     const [matchNotif, setMatchNotif] = useState<string | null>(null);
-    const initial = getUserInitial();
+    const { initial, role } = getTokenPayload();
+    const isOrg = role === 'ORGANIZATION';
 
     useEffect(() => {
         healthApi.check()
@@ -76,7 +79,7 @@ export default function AppLayout() {
             }}>
                 <div
                     style={{ cursor: 'pointer' }}
-                    onClick={() => navigate('/app/discover')}
+                    onClick={() => navigate(isOrg ? '/app/dashboard' : '/app/discover')}
                 >
                     <Logo />
                 </div>

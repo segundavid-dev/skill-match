@@ -16,6 +16,7 @@ export default function CreateOpportunityPage() {
         description: '',
         locationType: 'REMOTE' as LocationType,
         location: '',
+        searchLocation: '',
         startDate: '',
         endDate: '',
         spotsNeeded: 1,
@@ -41,9 +42,10 @@ export default function CreateOpportunityPage() {
                 ...form,
                 spotsNeeded: Number(form.spotsNeeded),
                 skillIds: selectedSkills,
-                startDate: form.startDate || undefined,
-                endDate: form.endDate || undefined,
+                startDate: form.startDate ? `${form.startDate}T00:00:00.000Z` : undefined,
+                endDate: form.endDate ? `${form.endDate}T00:00:00.000Z` : undefined,
                 location: form.location || undefined,
+                searchLocation: form.searchLocation || undefined,
                 impactMetric: form.impactMetric || undefined,
             });
             navigate('/app/dashboard');
@@ -159,6 +161,26 @@ export default function CreateOpportunityPage() {
                         />
                     </div>
                 )}
+
+                {/* Search Location */}
+                <div style={{ marginBottom: 20 }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#a1a1aa', marginBottom: 8 }}>
+                        Preferred Volunteer Location
+                    </label>
+                    <input
+                        type="text" value={form.searchLocation}
+                        onChange={e => setForm(p => ({ ...p, searchLocation: e.target.value }))}
+                        placeholder="e.g. Lagos, Nigeria or Anywhere"
+                        style={{
+                            width: '100%', padding: '12px 16px', borderRadius: 8,
+                            border: '1px solid #27272a', background: '#18181b',
+                            color: '#fafafa', fontSize: 15, outline: 'none',
+                        }}
+                    />
+                    <p style={{ fontSize: 12, color: '#52525b', marginTop: 6 }}>
+                        Where are you looking for volunteers from?
+                    </p>
+                </div>
 
                 {/* Spots & Impact */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>

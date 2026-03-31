@@ -1,16 +1,26 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+function getRoleFromToken(): string {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return 'VOLUNTEER';
+        return JSON.parse(atob(token.split('.')[1])).role || 'VOLUNTEER';
+    } catch { return 'VOLUNTEER'; }
+}
+
 interface NavItem {
     path: string;
     label: string;
     icon: React.ReactNode;
+    volunteerOnly?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
     {
         path: '/app/discover',
         label: 'Discover',
+        volunteerOnly: true,
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" />
@@ -61,6 +71,8 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function BottomNav() {
+    const role = getRoleFromToken();
+    const isOrg = role === 'ORGANIZATION';
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -80,7 +92,7 @@ export default function BottomNav() {
                 zIndex: 100,
             }}
         >
-            {NAV_ITEMS.map((item) => {
+            {NAV_ITEMS.filter(item => !item.volunteerOnly || !isOrg).map((item) => {
                 const isActive = location.pathname.startsWith(item.path);
                 return (
                     <button

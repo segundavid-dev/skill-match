@@ -18,7 +18,7 @@ export const opportunityController = {
       });
       if (!orgProfile) throw new AppError('Organization profile not found. Please complete setup.', 404);
 
-      const { title, description, locationType, location, startDate, endDate, spotsNeeded, impactMetric, skillIds } = req.body;
+      const { title, description, locationType, location, searchLocation, startDate, endDate, spotsNeeded, impactMetric, skillIds } = req.body;
 
       const opp = await prisma.opportunity.create({
         data: {
@@ -27,6 +27,7 @@ export const opportunityController = {
           description,
           locationType,
           location,
+          searchLocation,
           startDate: startDate ? new Date(startDate) : undefined,
           endDate: endDate ? new Date(endDate) : undefined,
           spotsNeeded: spotsNeeded ?? 1,
@@ -86,7 +87,7 @@ export const opportunityController = {
         return sendForbidden(res, 'You do not own this opportunity');
       }
 
-      const { title, description, locationType, location, startDate, endDate, spotsNeeded, status, impactMetric, skillIds } = req.body;
+      const { title, description, locationType, location, searchLocation, startDate, endDate, spotsNeeded, status, impactMetric, skillIds } = req.body;
 
       if (skillIds !== undefined) {
         await prisma.opportunitySkill.deleteMany({ where: { opportunityId: opp.id } });
@@ -105,6 +106,7 @@ export const opportunityController = {
           ...(description !== undefined && { description }),
           ...(locationType !== undefined && { locationType }),
           ...(location !== undefined && { location }),
+          ...(searchLocation !== undefined && { searchLocation }),
           ...(startDate !== undefined && { startDate: new Date(startDate) }),
           ...(endDate !== undefined && { endDate: new Date(endDate) }),
           ...(spotsNeeded !== undefined && { spotsNeeded }),

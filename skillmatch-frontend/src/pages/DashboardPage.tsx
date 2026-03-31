@@ -125,6 +125,7 @@ export default function DashboardPage() {
                                                 <div style={{ fontSize: 16, fontWeight: 600, color: '#fafafa' }}>{opp.title}</div>
                                                 <div style={{ fontSize: 13, color: '#71717a' }}>
                                                     {opp._count?.matches ?? 0} matches &middot; {opp.spotsFilled}/{opp.spotsNeeded} filled
+                                                    {opp.searchLocation && <> &middot; Seeking from {opp.searchLocation}</>}
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
