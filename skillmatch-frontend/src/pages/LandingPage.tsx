@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Globe from '../components/ui/Globe';
+import richardImg from '../assets/richard.jpg';
+import davidImg from '../assets/david.jpg';
+import trinityImg from '../assets/trinity.jpg';
+import danielImg from '../assets/Daniel.jfif';
 
 /* ─── Data ──────────────────────────────────────────────────────────────────── */
 
@@ -26,6 +30,32 @@ const PROCESS_STEPS = [
         step: '03',
         title: 'Connect & Contribute',
         desc: 'Apply directly, get confirmed, and start making a measurable difference in your community.',
+    },
+];
+const TEAM = [
+    {
+        name: 'Richard Gbemisola',
+        role: 'Team Lead',
+        image: richardImg,
+        bio: 'Leading the technical strategy and architecture of SkillMatch to ensure scalable community impact.'
+    },
+    {
+        name: 'Segun David',
+        role: 'Front-End Engineer',
+        image: davidImg,
+        bio: 'Specializing in crafting highly interactive, responsive, and performance-driven web interfaces.'
+    },
+    {
+        name: 'Trinity Adeleye',
+        role: 'Mobile Dev',
+        image: trinityImg,
+        bio: 'Bridging the gap between platforms by building seamless mobile experiences for volunteers on the go.'
+    },
+    {
+        name: 'Daniel Ariyibi',
+        role: 'Back-End Engineer',
+        image: danielImg,
+        bio: 'Architecting robust server-side logic and secure API integrations to power real-time matching.'
     },
 ];
 
@@ -338,6 +368,42 @@ export default function LandingPage() {
                 .sm-hero-globe canvas {
                     display: block;
                 }
+                    /* --- New Team Animations --- */
+@keyframes sm-reveal {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.sm-team-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-border);
+    border-radius: 24px; /* Slightly rounder for a modern look */
+    padding: 40px 32px;
+    text-align: center;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Spotlight glow effect on hover */
+.sm-team-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(16, 185, 129, 0.1), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+}
+
+.sm-team-card:hover::before {
+    opacity: 1;
+}
+
+.sm-team-card:hover {
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.1);
+}
 
                 /* ─── Responsive ──────────────────────────────────────────── */
                 @media (max-width: 960px) {
@@ -374,6 +440,11 @@ export default function LandingPage() {
                     }
                     .sm-social-proof { justify-content: center; }
                 }
+                    @media (max-width: 640px) {
+    .sm-team-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
             `}</style>
 
             {/* ═══════════════════════════════════════════════════════════════
@@ -529,8 +600,8 @@ export default function LandingPage() {
                                 background: 'var(--sm-bg)',
                                 transition: 'all 0.25s ease',
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--sm-surface)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--sm-bg)'; }}
+                                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--sm-surface)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--sm-bg)'; }}
                             >
                                 <div style={{
                                     width: 48, height: 48,
@@ -627,6 +698,106 @@ export default function LandingPage() {
             </section>
 
             <hr className="sm-divider" style={{ maxWidth: 1120, margin: '0 auto' }} />
+            {/* ═══════════════════════════════════════════════════════════════
+    TEAM SECTION (ANIMATED)
+════════════════════════════════════════════════════════════════ */}
+            <section style={{ padding: '120px 0', position: 'relative' }}>
+                <div className="sm-section">
+                    <div className="sm-section-header" style={{ textAlign: 'center', marginBottom: 80 }}>
+                        <p className="sm-label sm-fade-up">The Team</p>
+                        <h2 className="sm-heading sm-heading-lg sm-fade-up-1">
+                            Meet the minds behind<br />the mission
+                        </h2>
+                    </div>
+
+                    <div className="sm-team-grid" style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                        gap: 24,
+                    }}>
+                        {TEAM.map((member, i) => (
+                            <div
+                                key={member.name}
+                                className="sm-team-card"
+                                style={{
+                                    animation: `sm-reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) ${0.2 + i * 0.1}s both`
+                                }}
+                                onMouseMove={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const x = e.clientX - rect.left;
+                                    const y = e.clientY - rect.top;
+                                    e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+                                    e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+                                }}
+                            >
+                                {/* Floating Avatar Animation */}
+                                <div style={{
+                                    width: 120, height: 120,
+                                    margin: '0 auto 24px',
+                                    position: 'relative',
+                                    zIndex: 2
+                                }}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        inset: -8,
+                                        borderRadius: '50%',
+                                        background: 'conic-gradient(from 0deg, transparent, var(--sm-accent), transparent)',
+                                        opacity: 0.2,
+                                        animation: 'spin 10s linear infinite'
+                                    }} />
+                                    <img
+                                        src={member.image}
+                                        alt={member.name}
+                                        style={{
+                                            width: '100%', height: '100%',
+                                            borderRadius: '50%',
+                                            border: '2px solid var(--sm-border)',
+                                            background: 'var(--sm-bg)',
+                                            position: 'relative',
+                                            zIndex: 1
+                                        }}
+                                    />
+                                </div>
+
+                                <div style={{ position: 'relative', zIndex: 2 }}>
+                                    <h3 style={{
+                                        fontFamily: 'var(--sm-font)', fontSize: 20,
+                                        fontWeight: 700, color: 'var(--sm-text)', marginBottom: 4
+                                    }}>
+                                        {member.name}
+                                    </h3>
+                                    <p style={{
+                                        fontSize: 12, fontWeight: 700, color: 'var(--sm-accent)',
+                                        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16
+                                    }}>
+                                        {member.role}
+                                    </p>
+                                    <p style={{
+                                        fontSize: 14, lineHeight: 1.6, color: 'var(--sm-text-secondary)'
+                                    }}>
+                                        {member.bio}
+                                    </p>
+                                </div>
+
+                                {/* Background Accent */}
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: -20,
+                                    right: -20,
+                                    fontSize: 120,
+                                    fontWeight: 900,
+                                    color: 'white',
+                                    opacity: 0.02,
+                                    pointerEvents: 'none',
+                                    userSelect: 'none'
+                                }}>
+                                    0{i + 1}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
             {/* ═══════════════════════════════════════════════════════════════
                 TESTIMONIALS
@@ -775,8 +946,8 @@ export default function LandingPage() {
                                     {col.links.map((link) => (
                                         <li key={link} style={{ marginBottom: 10 }}>
                                             <a href="#" style={{ fontSize: 14, color: 'var(--sm-text-muted)', textDecoration: 'none', transition: 'color 0.15s' }}
-                                            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--sm-text)'; }}
-                                            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}>
+                                                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--sm-text)'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}>
                                                 {link}
                                             </a>
                                         </li>
@@ -797,8 +968,8 @@ export default function LandingPage() {
                         <div style={{ display: 'flex', gap: 20 }}>
                             {['Twitter', 'GitHub', 'LinkedIn'].map((social) => (
                                 <a key={social} href="#" style={{ fontSize: 13, color: 'var(--sm-text-muted)', textDecoration: 'none', transition: 'color 0.15s' }}
-                                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--sm-text)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}>
+                                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--sm-text)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sm-text-muted)'; }}>
                                     {social}
                                 </a>
                             ))}
