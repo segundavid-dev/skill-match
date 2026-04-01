@@ -441,7 +441,7 @@ export default function LandingPage() {
                                 No noise, no guesswork — just meaningful, verified opportunities matched to what you do best.
                             </p>
 
-                            <div className="sm-hero-buttons sm-fade-up-3" style={{ display: 'flex', gap: 16, marginBottom: 56 }}>
+                            <div className="sm-hero-buttons sm-fade-up-3" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 56 }}>
                                 <button className="sm-btn sm-btn-primary" onClick={() => navigate('/register')} style={{ padding: '16px 36px', fontSize: 15 }}>
                                     Start Volunteering
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -451,6 +451,14 @@ export default function LandingPage() {
                                 <button className="sm-btn sm-btn-secondary" onClick={goToAuth} style={{ padding: '16px 36px', fontSize: 15 }}>
                                     Post Opportunities
                                 </button>
+                                <a href="/SkillMatch.apk" download className="sm-btn sm-btn-ghost" style={{ padding: '16px 36px', fontSize: 15, border: '1px solid var(--sm-border)' }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}>
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
+                                    Get Android App
+                                </a>
                             </div>
 
                             {/* Social proof */}
