@@ -6,6 +6,8 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 import Logo from '../components/Logo';
 import BottomNav from '../components/BottomNav';
 import { healthApi } from '../api';
@@ -31,6 +33,17 @@ export default function AppLayout() {
     const { initial, role } = getTokenPayload();
     const isOrg = role === 'ORGANIZATION';
 
+    // Request native notification permissions
+    useEffect(() => {
+        if (Capacitor.isNativePlatform()) {
+            LocalNotifications.requestPermissions().then((result) => {
+                if (result.display !== 'granted') {
+                    console.log('Notifications permission not granted');
+                }
+            });
+        }
+    }, []);
+
     useEffect(() => {
         healthApi.check()
             .then(res => setStatus(res.data.status))
@@ -45,10 +58,47 @@ export default function AppLayout() {
         const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace('/api', '');
         const socket: Socket = io(baseUrl, { auth: { token } });
 
-        socket.on('new_match', (data: any) => {
+        // Handle Matches
+        socket.on('new_match', async (data: any) => {
             const title = data?.match?.opportunity?.title || 'an opportunity';
             setMatchNotif(`New match on "${title}"!`);
             setTimeout(() => setMatchNotif(null), 5000);
+            
+            // Native Buzz
+            if (Capacitor.isNativePlatform()) {
+                await LocalNotifications.schedule({
+                    notifications: [
+                        {
+                            title: 'New Match! 🎉',
+                            body: `You have a new match on "${title}"!`,
+                            id: new Date().getTime(),
+                            schedule: { at: new Date(Date.now() + 100) }, // Trigger almost immediately
+                            sound: undefined,
+                            attachments: undefined,
+                            actionTypeId: "",
+                            extra: null
+                        }
+                    ]
+                });
+            }
+        });
+
+        // Handle Global Messages
+        socket.on('new_message', async (message: any) => {
+            // Check to ensure we aren't currently IN this specific chat room
+            const inChatRoom = window.location.pathname.includes(`/messages/${message.roomId}`);
+            if (!inChatRoom && Capacitor.isNativePlatform()) {
+                await LocalNotifications.schedule({
+                    notifications: [
+                        {
+                            title: 'New Message 💬',
+                            body: message.content || 'You received a new message.',
+                            id: new Date().getTime() + 1,
+                            schedule: { at: new Date(Date.now() + 100) },
+                        }
+                    ]
+                });
+            }
         });
 
         return () => { socket.disconnect(); };
