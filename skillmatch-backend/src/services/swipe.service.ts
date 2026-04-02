@@ -54,7 +54,11 @@ export const swipeService = {
 
     const match = await prisma.match.upsert({
       where: { volunteerId_opportunityId: { volunteerId, opportunityId } },
-      update: { matchScore: scoreData.total, scoreBreakdown: scoreData as any, status: MatchStatus.PENDING },
+      update: {
+        matchScore: scoreData.total,
+        scoreBreakdown: scoreData as any,
+        status: MatchStatus.PENDING,
+      },
       create: {
         volunteerId,
         opportunityId,
@@ -155,7 +159,9 @@ export const swipeService = {
     if (!volunteer) throw new AppError('Volunteer not found', 404);
 
     await prisma.swipe.upsert({
-      where: { userId_opportunityId_volunteerId: { userId: orgUserId, opportunityId, volunteerId } },
+      where: {
+        userId_opportunityId_volunteerId: { userId: orgUserId, opportunityId, volunteerId },
+      },
       update: { direction },
       create: { userId: orgUserId, volunteerId, opportunityId, direction },
     });

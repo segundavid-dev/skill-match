@@ -38,28 +38,28 @@ SKILLMATCH/
 
 ### Frontend
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 18 with TypeScript |
-| Build tool | Vite |
-| Routing | React Router v7 |
-| HTTP client | Axios |
-| Real-time | Socket.IO Client |
-| Styling | Inline styles (no CSS framework) |
+| Layer       | Technology                       |
+| ----------- | -------------------------------- |
+| Framework   | React 18 with TypeScript         |
+| Build tool  | Vite                             |
+| Routing     | React Router v7                  |
+| HTTP client | Axios                            |
+| Real-time   | Socket.IO Client                 |
+| Styling     | Inline styles (no CSS framework) |
 
 ### Backend
 
-| Layer | Technology |
-|-------|-----------|
-| Runtime | Node.js with TypeScript (tsx) |
-| Framework | Express 4 |
-| ORM | Prisma 7 with PostgreSQL adapter |
-| Database | PostgreSQL (Neon serverless) |
-| Auth | JWT (access + refresh tokens), bcrypt |
-| Validation | Zod |
-| Real-time | Socket.IO |
-| Security | Helmet, CORS, express-rate-limit |
-| Logging | Morgan |
+| Layer      | Technology                            |
+| ---------- | ------------------------------------- |
+| Runtime    | Node.js with TypeScript (tsx)         |
+| Framework  | Express 4                             |
+| ORM        | Prisma 7 with PostgreSQL adapter      |
+| Database   | PostgreSQL (Neon serverless)          |
+| Auth       | JWT (access + refresh tokens), bcrypt |
+| Validation | Zod                                   |
+| Real-time  | Socket.IO                             |
+| Security   | Helmet, CORS, express-rate-limit      |
+| Logging    | Morgan                                |
 
 ### Database Schema
 
@@ -135,32 +135,24 @@ cd skillmatch-frontend && npm run dev
 
 All seeded accounts use the password `Password123!`
 
-| Role | Email |
-|------|-------|
-| Organization | admin@greenearth.org |
-| Organization | admin@brightminds.org |
+| Role         | Email                  |
+| ------------ | ---------------------- |
+| Organization | admin@greenearth.org   |
+| Organization | admin@brightminds.org  |
 | Organization | admin@healthbridge.org |
-| Volunteer | alex@example.com |
-| Volunteer | fatima@example.com |
-| Volunteer | chidi@example.com |
-
----
-
-## Development Approach
-
-This project was built as a viable MVP in **three weeks** using **AI-assisted development with Claude Code (Anthropic)**. Claude was used throughout the development process for architecture decisions, code generation, debugging, and feature implementation. The goal was to demonstrate how AI-assisted coding can accelerate the delivery of functional software for community-driven projects under tight hackathon timelines.
-
-The codebase was developed iteratively -- starting with the data model and auth layer, then building out the matching algorithm, swipe mechanics, real-time chat, and dual dashboard interfaces in successive passes.
+| Volunteer    | alex@example.com       |
+| Volunteer    | fatima@example.com     |
+| Volunteer    | chidi@example.com      |
 
 ---
 
 ## Contributors
 
-| Role | GitHub |
-|------|--------|
-| Team Lead and Coordinator | [richardxcx](https://github.com/richardxcx) |
-| Developer | [dansenpaix](https://github.com/dansenpaix) |
-| Developer | [segundavid-dev](https://github.com/segundavid-dev) |
+| Role                      | GitHub                                              |
+| ------------------------- | --------------------------------------------------- |
+| Team Lead and Coordinator | [richardxcx](https://github.com/richardxcx)         |
+| Developer                 | [dansenpaix](https://github.com/dansenpaix)         |
+| Developer                 | [segundavid-dev](https://github.com/segundavid-dev) |
 
 ---
 
